@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.*;
 import java.util.*;
 
+// Extended Euclid Algorithm
 public class Main {
     static long x, y;
 
@@ -23,7 +24,7 @@ public class Main {
         return d;
     }
 
-    public static void main(String[] agrs) throws IOException {
+    public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
 
