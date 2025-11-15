@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
+// MaxFlow Algorithm
 public class Main {
     static final int SIZE = 52;
     static int[][] capacity = new int[SIZE][SIZE];
