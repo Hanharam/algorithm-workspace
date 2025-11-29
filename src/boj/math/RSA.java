@@ -75,12 +75,12 @@ public class RSA {
         int d;
         if (e == 0) {
             return 1;
-        } else if (Math.floorMod(e, 2) == 0) {
+        } else if (e % 2 == 0) {
             d = expMod(m, e / 2, n);
-            return Math.floorMod(d * d, n);
+            return (d * d) % n;
         } else {
             d = expMod(m, e - 1, n);
-            return Math.floorMod(m * d, n);
+            return (m * d) % n;
         }
     }
 
