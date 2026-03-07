@@ -1,4 +1,4 @@
-package boj.dataStructure.b10828;
+package boj.dataStructure.Silver.b10828_스택;
 
 import java.io.*;
 import java.util.*;

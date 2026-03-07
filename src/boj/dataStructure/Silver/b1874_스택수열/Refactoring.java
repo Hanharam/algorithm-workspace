@@ -1,7 +1,6 @@
-package boj.dataStructure.b1874;
+package boj.dataStructure.Silver.b1874_스택수열;
 
 import java.io.*;
-import java.util.*;
 
 
 public class Refactoring{

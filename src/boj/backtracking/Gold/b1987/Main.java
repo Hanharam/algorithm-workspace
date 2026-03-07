@@ -1,4 +1,4 @@
-package boj.backtracking.b1987;
+package boj.backtracking.Gold.b1987;
 
 import java.io.BufferedReader;
 import java.io.IOException;

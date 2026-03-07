@@ -1,7 +1,6 @@
-package boj.dataStructure.b9012;
+package boj.dataStructure.Silver.b9012_괄호;
 
 import java.io.*;
-import java.util.*;
 
 public class Main {
 

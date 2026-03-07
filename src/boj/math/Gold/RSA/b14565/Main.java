@@ -1,4 +1,4 @@
-package boj.math.b14565;
+package boj.math.Gold.RSA.b14565;
 
 import java.io.IOException;
 import java.io.*;

@@ -1,4 +1,4 @@
-package boj.backtracking.b10971;
+package boj.backtracking.Silver.b10971;
 
 import java.io.*;
 import java.util.*;

@@ -1,7 +1,6 @@
-package boj.dataStructure.b9093;
+package boj.dataStructure.Bronze.b9093;
 
 import java.io.*;
-import java.util.*;
 
 public class Main {
 
