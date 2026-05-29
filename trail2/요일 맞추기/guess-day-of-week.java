@@ -25,30 +25,9 @@ public class Main {
         }
 
         int day = ((end - start) % 7 + 7) % 7;
-        switch(day) {
-            case 0:
-                System.out.print("Mon");
-                break;
-            case 1:
-                System.out.print("Tue");
-                break;
-            case 2:
-                System.out.print("Wed");
-                break;
-            case 3:
-                System.out.print("Thu");
-                break;
-            case 4:
-                System.out.print("Fri");
-                break;
-            case 5:
-                System.out.print("Sat");
-                break;
-            case 6:
-                System.out.print("Sun");
-                break;
-        }
+        
+        String[] dayOfWeek = {"Mon", "Tue", "Wed", "Thu", "Fri", "Tue", "Sun"};
 
-
+        System.out.print(dayOfWeek[day]);
     }
 }
