@@ -9,23 +9,31 @@ public class Main {
         int n = Integer.parseInt(st.nextToken());
         int k = Integer.parseInt(st.nextToken());
 
+        int[] a = new int[100];
+        int[] b = new int[100];
+
         int[] block = new int[n];
 
         for(int i = 0; i < k; i++) {
             st = new StringTokenizer(br.readLine());
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
+            a[i] = Integer.parseInt(st.nextToken());
+            b[i] = Integer.parseInt(st.nextToken());
+        }
 
-            for(int j = a - 1; j < b; j++) {
-                block[j]++;
+        for(int i = 0; i < k; i++) {
+            for(int j = a[i] - 1; j < b[i]; j++) {
+                block[j]++;;
             }
         }
 
         int max = 0;
+
         for(int i = 0; i < n; i++) {
-            if(max < block[i]) max = block[i];
+            if(block[i] > max)
+                max = block[i];
         }
 
         System.out.print(max);
+
     }
 }
