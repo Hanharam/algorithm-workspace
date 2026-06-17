@@ -18,11 +18,10 @@ public class Main {
         for(int i = 0; i < N; i++) {
             if(i == 0 || numbers[i] == numbers[i - 1]) cnt++;
             else {
-                max = Math.max(max, cnt);
                 cnt = 1;
             }
+            max = Math.max(max, cnt);
         }
-        max = Math.max(max, cnt);
         System.out.print(max);
     }
 }
