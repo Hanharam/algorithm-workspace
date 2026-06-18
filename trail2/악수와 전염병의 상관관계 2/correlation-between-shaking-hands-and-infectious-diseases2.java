@@ -1,63 +1,69 @@
 import java.io.*;
 import java.util.*;
 
+class Shake implements Comparable<Shake> {
+    int time;
+    int person1;
+    int person2;
+
+    public Shake(int t, int x, int y) {
+        this.time = t;
+        this.person1 = x;
+        this.person2 = y;
+    }
+
+    @Override
+    public int compareTo(Shake shake){
+        return time - shake.time;
+    }
+}
+
 public class Main {
+    public static final int MAX_T = 250;
+    public static final int MAX_N = 100;
+
+    public static int n, k, p, t;
+    public static int[] shakeNum = new int[MAX_N + 1];
+    public static boolean[] infected = new boolean[MAX_N + 1];
+
     public static void main(String[] args) throws IOException{
         // Please write your code here.
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
 
-        int N = Integer.parseInt(st.nextToken());
-        int K = Integer.parseInt(st.nextToken());
-        int P = Integer.parseInt(st.nextToken());
-        int T = Integer.parseInt(st.nextToken());
+        n = Integer.parseInt(st.nextToken());
+        k = Integer.parseInt(st.nextToken());
+        p = Integer.parseInt(st.nextToken());
+        t = Integer.parseInt(st.nextToken());
+        infected[p] = true;
 
-        int[] infection = new int[N + 1];
-        int[] valid = new int[N + 1];
-        int[] arrX = new int[251];
-        int[] arrY = new int[251];
+        Shake[] shakes = new Shake[MAX_T];
 
-        infection[P] = 1;
-        valid[P] = K;
-        
-        for(int i = 0; i < T; i++) {
+        for(int i = 0; i < t; i++) {
             st = new StringTokenizer(br.readLine());
-            int t = Integer.parseInt(st.nextToken());
-            int x = Integer.parseInt(st.nextToken());
-            int y = Integer.parseInt(st.nextToken());
+            int time = Integer.parseInt(st.nextToken());
+            int person1 = Integer.parseInt(st.nextToken());
+            int person2 = Integer.parseInt(st.nextToken());
+            shakes[i] = new Shake(time, person1, person2);
+        }
+        Arrays.sort(shakes, 0, t);
 
-            arrX[t] = x;
-            arrY[t] = y;   
+        for(int i = 0; i < t; i++) {
+            int target1 = shakes[i].person1;
+            int target2 = shakes[i].person2;
+
+            if(infected[target1]) shakeNum[target1]++;
+            if(infected[target2]) shakeNum[target2]++;
+
+            if(infected[target1] && shakeNum[target1] <= k)
+                infected[target2] = true;
+            if(infected[target2] && shakeNum[target2] <= k)
+                infected[target1] = true;
         }
 
-        for(int i = 0; i < 251; i++) {
-            int x = arrX[i];
-            int y = arrY[i];
-
-            if(x == 0 || y == 0) continue;
-            
-            boolean xInfected = (infection[x] == 1);
-            boolean yInfected = (infection[y] == 1);
-
-            if(xInfected && valid[x] > 0) {
-                if(infection[y] != 1) {
-                    infection[y] = 1;
-                    valid[y] = K;
-                }
-                valid[x]--;
-            }
-            if(yInfected && valid[y] > 0) {
-                if(infection[x] != 1) {
-                    infection[x] = 1;
-                    valid[x] = K;
-                }
-                valid[y]--;
-            }
+        for(int i = 1; i <= n; i++) {
+            if(infected[i]) System.out.print(1);
+            else System.out.print(0);
         }
-
-        for(int i = 1; i <= N; i++){
-            System.out.print(infection[i]);
-        }
-
     }
 }
