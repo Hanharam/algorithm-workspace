@@ -11,17 +11,16 @@ public class Main {
         int b = Integer.parseInt(st.nextToken());
         int c = Integer.parseInt(st.nextToken());
 
-        int aCnt = c/a;
-        int bCnt = c/b;
-
 
         int ans = Integer.MIN_VALUE;
-        for(int i = 0; i <= aCnt; i++) {
-            for(int j = 0; j <= bCnt; j++) {
-                int sum = (a * i) + (b * j);
+        for(int i = 0; i * a <= c; i++) {
+            int cnt = i * a;
 
-                if(sum <= c) ans = Math.max(ans, sum);
-            }
+            int numB = (c - cnt) / b;
+
+            cnt += b * numB;
+
+            ans = Math.max(ans, cnt);
         }
 
         System.out.print(ans);
