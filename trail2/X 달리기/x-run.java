@@ -7,20 +7,21 @@ public class Main {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         int x = Integer.parseInt(br.readLine());
 
-        int maxSpeed = (int) Math.sqrt(x);
-        
-        int maxPeakDistance = maxSpeed * maxSpeed;
+        int t = 0;
+        int leftDist = x;
+        int v = 1;
 
-        int minTime = 0;
+        while(true) {
+            leftDist -= v;
+            t++;
 
-        if (x == maxPeakDistance) {
-            minTime = 2 * maxSpeed - 1;
-        } else if (x <= maxPeakDistance + maxSpeed) {
-            minTime = 2 * maxSpeed;
-        } else {
-            minTime = 2 * maxSpeed + 1;
+            if(leftDist == 0)
+                break;
+
+            if(leftDist >= (v + 1) * (v + 2) / 2) v++;
+            else if(leftDist >= v * (v + 1) / 2) {}
+            else v--;
         }
-
-        System.out.println(minTime);
+        System.out.print(t);
     }
 }
