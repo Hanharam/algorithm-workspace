@@ -1,94 +1,122 @@
-import java.io.*;
 import java.util.*;
+import java.io.*;
+
+class Marble {
+    int x, y, z;
+
+    public Marble(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+}
 
 public class Main {
-    public static int t, n, m;
-    public static int[][] grid;
-    public static int[][] dir;
-    public static int[][] count;
-    public static int[][] nextDir;
+    public static final int ASCII_NUM = 128;
+    public static final int MAX_N = 50;
+    public static final int DIR_NUM = 4;
 
-    public static int[] dx = {1, 0, -1, 0};  // (+ 2 % 4)
-    public static int[] dy = {0, 1, 0, -1}; // D, R, U, L
+    public static int t, n, m;
+
+    public static int[][] marbleCnt = new int[MAX_N + 1][MAX_N + 1];
+
+    public static int[] mapper = new int[ASCII_NUM];
+
+    public static int[] dx = new int[]{-1, 0, 0, 1};
+    public static int[] dy = new int[]{0, 1, -1, 0};
+
+    public static ArrayList<Marble> marbles = new ArrayList<>();
 
     public static boolean inRange(int x, int y) {
-        return x >= 0 && x < n && y >= 0 && y < n;
+        return 1 <= x && x <= n && 1 <= y && y <= n;
     }
 
-    public static void main(String[] args) throws IOException{
-        // Please write your code here.
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        t = Integer.parseInt(br.readLine());
+    public static Marble move(Marble marble) {
+        int x = marble.x;
+        int y = marble.y;
+        int dir = marble.z;
 
-        StringTokenizer st;
+        int nx = x + dx[dir], ny = y + dy[dir];
 
-        for(int o = 0; o < t; o++) {
+        if(inRange(nx, ny))
+            return new Marble(nx, ny, dir);
+        else 
+            return new Marble(x, y, 3 - dir);
+    }
 
-            st = new StringTokenizer(br.readLine());
-            n = Integer.parseInt(st.nextToken());
-            m = Integer.parseInt(st.nextToken());
-            grid = new int[n][n];   // 현재 좌표
-            dir = new int[n][n];    // 방향 표시
+    public static void moveAll() {
+        for(int i = 0; i < marbles.size(); i++) {
+            Marble nextMarble = move(marbles.get(i));
+            marbles.set(i, nextMarble);
+        }
+    }
 
+    public static boolean duplicateMarbleExist(int targetIdx) {
+        int targetX = marbles.get(targetIdx).x;
+        int targetY = marbles.get(targetIdx).y;
 
-            for(int i = 0; i < m; i++) {
-                st = new StringTokenizer(br.readLine());
+        return marbleCnt[targetX][targetY] >= 2;
+    }
 
-                int x = Integer.parseInt(st.nextToken()) - 1;
-                int y = Integer.parseInt(st.nextToken()) - 1;
-                char ch = st.nextToken().charAt(0);
+    public static void removeDuplicateMarbles() {
+        ArrayList<Marble> tempVector = new ArrayList<>();
 
-                grid[x][y] = 1;
+        for(int i = 0; i < marbles.size(); i++) {
+            int x = marbles.get(i).x;
+            int y = marbles.get(i).y;
+            marbleCnt[x][y]++;
+        }
 
-                if(ch == 'D') dir[x][y] = 0;
-                else if(ch == 'R') dir[x][y] = 1;
-                else if(ch == 'U') dir[x][y] = 2;
-                else dir[x][y] = 3;
+        for(int i = 0; i < marbles.size(); i++) {
+            if(!duplicateMarbleExist(i))
+                tempVector.add(marbles.get(i));
+        }
+
+        for(int i = 0; i < marbles.size(); i++) {
+            int x = marbles.get(i).x;
+            int y = marbles.get(i).y;
+            marbleCnt[x][y]--;
+        }
+
+        marbles = tempVector;
+    }
+
+    public static void simulate() {
+        moveAll();
+
+        removeDuplicateMarbles();
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        mapper['U'] = 0;
+        mapper['R'] = 1;
+        mapper['L'] = 2;
+        mapper['D'] = 3;
+
+        t = sc.nextInt();
+
+        while(t-- > 0) {
+            
+            marbles = new ArrayList<>();
+
+            n = sc.nextInt();
+            m = sc.nextInt();
+
+            for (int i = 0; i < m; i++) {
+                int x = sc.nextInt();
+                int y = sc.nextInt();
+                char d = sc.next().charAt(0);
+                marbles.add(new Marble(x, y, mapper[d]));
+            }
+            // Please write your code here.
+
+            for(int i = 1; i <= 2*n; i++) {
+                simulate();
             }
 
-            for(int i = 0; i < 2*n; i++) {
-                count = new int[n][n];  // 이동한 좌표
-                nextDir = new int[n][n];
-
-                for(int q = 0; q < n; q++) {
-                    for(int w = 0; w < n; w++) {
-                        int nx, ny;
-                        if(grid[q][w] == 1) {
-                            nx = q + dx[dir[q][w]];
-                            ny = w + dy[dir[q][w]];
-
-                            if(inRange(nx, ny)) {
-                                count[nx][ny]++;
-                                nextDir[nx][ny] = dir[q][w];
-                            }
-                            else {
-                                nextDir[q][w] = (dir[q][w] + 2) % 4;
-                                count[q][w]++;
-                            }
-                        }
-                    }
-                }
-
-                for(int q = 0; q < n; q++) {
-                    for(int w = 0; w < n; w++) {
-                        if(count[q][w] <= 1) {
-                            grid[q][w] = count[q][w];
-                            dir[q][w] = nextDir[q][w];
-                        }
-                        else {
-                            grid[q][w] = 0;
-                        }
-                    }
-                }
-            }
-
-            int cnt = 0;
-            for(int i = 0; i < n; i++) {
-                for(int j = 0; j < n; j++) {
-                    if(grid[i][j] == 1) cnt++;
-                }
-            }
-            System.out.println(cnt);
+            System.out.println(marbles.size());
         }
     }
 }
