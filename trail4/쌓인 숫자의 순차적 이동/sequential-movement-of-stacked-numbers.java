@@ -1,98 +1,125 @@
-import java.io.*;
-import java.util.*;
+import java.util.Scanner;
+import java.util.ArrayList;
+
+class Pair {
+    int x, y;
+    public Pair(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+}
 
 public class Main {
+    public static final Pair OUT_OF_GRID = new Pair(-1, -1);
+    public static final int DIR_NUM = 8;
+    public static final int MAX_N = 20;
+
     public static int n, m;
+    public static ArrayList<Integer>[][] grid = new ArrayList[MAX_N][MAX_N];
 
-    public static int[] dx = {1, 1, 1, -1, -1, -1, 0, 0};
-    public static int[] dy = {1, -1, 0, 1, -1, 0, 1, -1};
-
-    public static Deque<Integer>[][] grid;
-
+    public static Pair Getpos(int moveNum) {
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                for(int k = 0; k < grid[i][j].size(); k++) {
+                    if(moveNum == grid[i][j].get(k))
+                        return new Pair(i, j);
+                }
+            }
+        }
+        return new Pair(0, 0);
+    }
+    
     public static boolean inRange(int x, int y) {
         return 0 <= x && x < n && 0 <= y && y < n;
     }
 
-    public static void main(String[] args) throws IOException{
-        // Please write your code here.
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st = new StringTokenizer(br.readLine());
+    public static Pair NextPos(Pair pos) {
+        int[] dx = {1, 1, 1, -1, -1, -1, 0, 0};
+        int[] dy = {1, -1, 0, 1, -1, 0, 1, -1};
 
-        n = Integer.parseInt(st.nextToken());
-        m = Integer.parseInt(st.nextToken());
+        int x = pos.x;
+        int y = pos.y;
 
-        grid = new Deque[n][n];
-
-        int size = n*n;
-
-        for(int i = 0; i < n; i++) {
-            st = new StringTokenizer(br.readLine());
-            for(int j = 0; j < n; j++) {
-                grid[i][j] = new ArrayDeque<>();
-                grid[i][j].push(Integer.parseInt(st.nextToken()));
+        int maxVal = -1;
+        Pair maxPos = OUT_OF_GRID;
+        for(int i = 0; i < DIR_NUM; i++) {
+            int nx = x + dx[i];
+            int ny = y + dy[i];
+            if(inRange(nx, ny)) {
+                for(int j = 0; j < (int) grid[nx][ny].size(); j++) {
+                    if(maxVal < grid[nx][ny].get(j)) {
+                        maxVal = grid[nx][ny].get(j);
+                        maxPos = new Pair(nx, ny);
+                    }
+                }
             }
         }
 
-        st = new StringTokenizer(br.readLine());
-        for(int i = 0; i < m; i++) {
-            int number = Integer.parseInt(st.nextToken());
+        return maxPos;
+    }
 
-            int x = -1, y = -1;
+    public static void move(Pair pos, Pair nextPos, int moveNum) {
+        int x = pos.x;
+        int y = pos.y;
+
+        int nx = nextPos.x;
+        int ny = nextPos.y;
+
+        boolean toMove = false;
+        for(int i = 0; i < (int) grid[x][y].size(); i++) {
+            if(grid[x][y].get(i) == moveNum)
+                toMove = true;
             
-            for(int l = 0; l < n; l++) {    // 바꾸려는 숫자 위치 찾기
-                for(int k = 0; k < n; k++) {
-                    for(int num : grid[l][k]) {
-                        if(num == number) {
-                            x = l;
-                            y = k;
-                            break;
-                        }
-                    }
-                }
-            }
+            if(toMove)
+                grid[nx][ny].add(grid[x][y].get(i));
+        }
 
-            int maxX = -1;
-            int maxY = -1;
-            int maxNum = 0;
+        while(grid[x][y].get(grid[x][y].size() - 1) != moveNum) {
+            grid[x][y].remove(grid[x][y].size() - 1);
+        }
+        grid[x][y].remove(grid[x][y].size() - 1);
+    }
 
-            int nx, ny;
 
-            for(int dir = 0; dir < 8; dir++) {
-                nx = x + dx[dir];
-                ny = y + dy[dir];
+    public static void simulate(int moveNum) {
 
-                if(inRange(nx, ny)) {
-                    for(int num : grid[nx][ny]) {
-                        if(num > maxNum) {
-                            maxNum = num;
-                            maxX = nx;
-                            maxY = ny;
-                        }
-                    }
-                }
-            }
+        Pair pos = Getpos(moveNum);
+        Pair nextPos = NextPos(pos);
+        if(nextPos != OUT_OF_GRID)
+            move(pos, nextPos, moveNum);
+    }
 
-            if(maxX == -1 && maxY == -1) continue;
 
-            int cor = 0;
-            Deque<Integer> temp = new ArrayDeque<>();
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        n = sc.nextInt();
+        m = sc.nextInt();
 
-            while(cor != number) {
-                cor = grid[x][y].pop();
-                temp.push(cor);
-            }
-
-            for(int num : temp) {
-                grid[maxX][maxY].push(num);
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                grid[i][j] = new ArrayList<>();
             }
         }
 
         for(int i = 0; i < n; i++) {
             for(int j = 0; j < n; j++) {
-                if(grid[i][j].isEmpty()) System.out.print("None");
+                int num = sc.nextInt();
+                grid[i][j].add(num);
+            }
+        }
+
+        while(m-- > 0) {
+            int moveNum = sc.nextInt();
+            simulate(moveNum);
+        }
+
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                if((int) grid[i] [j].size() == 0) 
+                    System.out.print("None");
                 else {
-                    for(int num : grid[i][j]) {
-                        System.out.print(num + " ");
+                    for(int k = (int) grid[i][j].size() - 1; k >= 0; k--) {
+                        System.out.print(grid[i][j].get(k) + " ");
                     }
                 }
                 System.out.println();
@@ -100,5 +127,3 @@ public class Main {
         }
     }
 }
-
-// 각각의 칸은 스택으로 운영
