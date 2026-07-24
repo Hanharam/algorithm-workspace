@@ -1,90 +1,97 @@
-import java.io.*;
 import java.util.*;
+import java.io.*;
+
+class Pair {
+    int x, y;
+    public Pair(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+}
 
 public class Main {
+    public static final int INT_MAX = Integer.MAX_VALUE;
+    public static final int COIN_NUM = 9;
+    public static final int MAX_N = 20;
+
     public static int n;
-    public static char[][] grid;
+    public static int m = 3;
 
-    public static int[] dx = {1, 0, -1, 0}; // D, R, U, L
-    public static int[] dy = {0, 1, 0, -1};
+    public static char[][] grid = new char[MAX_N][MAX_N];
 
-    static class Node {
-        int x, y, dist, coinCnt, lastCoinVal;
+    public static ArrayList<Pair> coinPos = new ArrayList<>();
+    public static ArrayList<Pair> selectedPos = new ArrayList<>();
+    
+    public static Pair startPos;
+    public static Pair endPos;
 
-        public Node(int x, int y, int dist, int coinCnt, int lastCoinVal) {
-            this.x = x;
-            this.y = y;
-            this.dist = dist;
-            this.coinCnt = coinCnt;
-            this.lastCoinVal = lastCoinVal;
-        }
+    public static int ans = INT_MAX;
+
+    public static int dist(Pair a, Pair b) {
+        int ax = a.x;
+        int ay = a.y;
+
+        int bx = b.x;
+        int by = b.y;
+
+        return Math.abs(ax - bx) + Math.abs(ay - by);
     }
 
-    public static boolean inRange(int x, int y) {
-        return 0 <= x && x < n && 0 <= y && y < n;
-    }
-
-    public static int findMinPath(int x, int y) {
-        Queue<Node> q = new LinkedList<>();
-
-        boolean[][][][] visited = new boolean[n][n][4][10];
-
-        q.offer(new Node(x, y, 0, 0, 0));
-        visited[x][y][0][0] = true;
-
-        while(!q.isEmpty()) {
-            Node curr = q.poll();
-
-            if(grid[curr.x][curr.y] == 'E' && curr.coinCnt >= 3) {
-                return curr.dist;
-            }
-
-            for(int i = 0; i < 4; i++) {
-                int nx = curr.x + dx[i];
-                int ny = curr.y + dy[i];
-
-                if(!inRange(nx, ny)) continue;
-
-                if(grid[nx][ny] >= '1' && grid[nx][ny] <= '9') {
-                    int coinVal = grid[nx][ny] - '0';
-                    if(curr.lastCoinVal < coinVal) {
-                        int nextCoinCnt = Math.min(3, curr.coinCnt + 1);
-
-                        if(!visited[nx][ny][nextCoinCnt][coinVal]) {
-                            visited[nx][ny][nextCoinCnt][coinVal] = true;
-                            q.offer(new Node(nx, ny, curr.dist + 1, nextCoinCnt, coinVal));
-                        }
-                    }
-                }
-
-                if(!visited[nx][ny][curr.coinCnt][curr.lastCoinVal]) {
-                    visited[nx][ny][curr.coinCnt][curr.lastCoinVal] = true;
-                    q.offer(new Node(nx, ny, curr.dist + 1, curr.coinCnt, curr.lastCoinVal));
-                }
-            }
+    public static int calc() {
+        int numMoves = dist(startPos, selectedPos.get(0));
+        for(int i = 0; i < m - 1; i++) {
+            numMoves += dist(selectedPos.get(i), selectedPos.get(i + 1));
         }
 
-        return -1;
+        numMoves += dist(selectedPos.get(m - 1), endPos);
+
+        return numMoves;
+    }
+
+    public static void findMinMoves(int currIdx, int cnt) {
+        if(cnt == m) {
+            ans = Math.min(ans, calc());
+            return;
+        }
+
+        if(currIdx == (int) coinPos.size()) return;
+
+        findMinMoves(currIdx + 1, cnt);
+
+        selectedPos.add(coinPos.get(currIdx));
+        findMinMoves(currIdx + 1, cnt + 1);
+        selectedPos.remove(selectedPos.size() - 1);
     }
 
     public static void main(String[] args) throws IOException{
-        // Please write your code here.
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        n = Integer.parseInt(br.readLine());
-
-        grid = new char[n][n];
-
-        int startX = 0, startY = 0;
-
+        Scanner sc = new Scanner(System.in);
+        n = sc.nextInt();
+        
         for(int i = 0; i < n; i++) {
-            grid[i] = br.readLine().toCharArray();
+            String str = sc.next();
             for(int j = 0; j < n; j++) {
-                if(grid[i][j] == 'S') {
-                    startX = i;
-                    startY = j;
-                }
+                grid[i][j] = str.charAt(j);
+                if(grid[i][j] == 'S')
+                    startPos = new Pair(i, j);
+                if(grid[i][j] == 'E')
+                    endPos = new Pair(i, j);
             }
         }
-        System.out.print(findMinPath(startX, startY));
+        
+        for(int num = 1; num <= COIN_NUM; num++) 
+            for(int i = 0; i < n; i++)
+                for(int j = 0; j < n; j++)
+                    if(grid[i][j] == num + '0')
+                        coinPos.add(new Pair(i, j));
+        
+        findMinMoves(0, 0);
+        
+        if(ans == INT_MAX)
+            ans = -1;
+        
+        System.out.print(ans);
     }
 }
+
+// 코인들은 순서대로 pos 에 넣은 다음에
+// 하나씩 꺼내서 쓰면서 3개 선택되었을 때 거리 계산하기
