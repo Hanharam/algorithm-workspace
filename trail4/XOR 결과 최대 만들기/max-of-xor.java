@@ -2,33 +2,24 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
+    public static final int MAX_NUM = 20;
+
     public static int n, m;
     public static int[] numbers;
+
     public static int answer = Integer.MIN_VALUE;
-    public static ArrayList<Integer> arr = new ArrayList<>();
 
-    public static void calc() {
-        int curValue = 0;
-        for(int i = 0; i < arr.size(); i++) {
-            curValue = curValue ^ arr.get(i);
-        }
-
-        answer = Math.max(answer, curValue);
-    }
-
-    public static void choose(int curNum, int cnt) {
-        if(curNum == m + 1) {
-            calc();
+    public static void findMaxXor(int currIdx, int cnt, int currVal) {
+        if(cnt == m) {
+            answer = Math.max(currVal, answer);
             return;
         }
-        if(cnt == n) return;
 
-        for(int i = cnt; i < n; i++) {
-            arr.add(numbers[i]);
-            choose(curNum + 1, i + 1);
-            arr.remove(arr.size() - 1);
-        }
-        return;
+        if(currIdx >= n || n - currIdx < m - cnt) return;
+
+        findMaxXor(currIdx + 1, cnt, currVal);
+
+        findMaxXor(currIdx + 1, cnt + 1, currVal ^ numbers[currIdx]);
     }
 
     public static void main(String[] args) throws IOException{
@@ -46,7 +37,7 @@ public class Main {
             numbers[i] = Integer.parseInt(st.nextToken());
         }
 
-        choose(1, 0);
+        findMaxXor(0, 0, 0);
 
         System.out.print(answer);
     }
