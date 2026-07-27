@@ -1,52 +1,93 @@
 import java.io.*;
 import java.util.*;
 
+class Pair{
+    int x, y;
+
+    public Pair(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+}
 public class Main {
+    public static final int MAX_M = 200;
+    public static final int MAX_N = 200;
+    public static final int DIR_NUM = 4;
+    
+    public static final int WATER = 0;
+    public static final int GLACIER = 1;
+
     public static int n, m;
-    public static int[][] grid;
+    
+    public static int[][] a = new int[MAX_N][MAX_M];
+    
+    public static Queue<Pair> q = new LinkedList<>();
+    public static boolean[][] visited = new boolean[MAX_N][MAX_N];
+    public static int cnt;
+    
+    public static Queue<Pair> glaciersToMelt = new LinkedList<>();
 
     public static int[] dx = {1, 0, -1, 0};
     public static int[] dy = {0, 1, 0, -1};
+
+    public static int elapsedTime, lastMeltCnt;
 
     public static boolean inRange(int x, int y) {
         return 0 <= x && x < n && 0 <= y && y < m;
     }
 
-    public static int meltOneSecond() {
-        boolean[][] visited = new boolean[n][m];
-        Queue<int[]> q = new LinkedList<>();
-        List<int[]> melted = new ArrayList<>();
+    public static boolean canGo(int x, int y) {
+        return inRange(x, y) && a[x][y] == WATER && !visited[x][y];
+    }
+    
+    public static boolean isGlacier(int x, int y) {
+        return inRange(x, y) && a[x][y] == GLACIER && !visited[x][y];
+    }
 
-        q.add(new int[]{0, 0});
-
-        visited[0][0] = true;
-
+    public static void BFS() {
         while(!q.isEmpty()) {
-            int[] cur = q.poll();
-            int x = cur[0];
-            int y = cur[1];
+            Pair currPos = q.poll();
+            int x = currPos.x, y = currPos.y;
 
-            for(int d = 0; d < 4; d++) {
-                int nx = x + dx[d];
-                int ny = y + dy[d];
+            for(int dir = 0; dir < DIR_NUM; dir++) {
+                int nx = x + dx[dir], ny = y + dy[dir];
+            
 
-                if(!inRange(nx, ny) || visited[nx][ny]) continue;
-
-                visited[nx][ny] = true;
-
-                if(grid[nx][ny] == 1) {
-                    melted.add(new int[]{nx, ny});
-                } else {
-                    q.add(new int[]{nx, ny});
+                if(canGo(nx, ny)) {
+                    q.add(new Pair(nx, ny));
+                    visited[nx][ny] = true;
+                }
+                else if(isGlacier(nx, ny)) {
+                    glaciersToMelt.add(new Pair(nx, ny));
+                    visited[nx][ny] = true;
                 }
             }
         }
+    }
 
-        for(int[] ice : melted) {
-            grid[ice[0]][ice[1]] = 0;
+    public static void melt() {
+        while(!glaciersToMelt.isEmpty()) {
+            Pair pos = glaciersToMelt.poll();
+            int x = pos.x, y = pos.y;
+
+            a[x][y] = WATER;
+        }
+    }
+
+    public static boolean simulate() {
+        BFS();
+
+        if(glaciersToMelt.size() == 0) {
+            return false;
         }
 
-        return melted.size();
+        elapsedTime++;
+        lastMeltCnt = glaciersToMelt.size();
+        q = new LinkedList<>(glaciersToMelt);
+
+        melt();
+
+        return true;
     }
 
     public static void main(String[] args) throws IOException{
@@ -57,27 +98,22 @@ public class Main {
         n = Integer.parseInt(st.nextToken());
         m = Integer.parseInt(st.nextToken());
 
-        grid = new int[n][m];
-
         for(int i = 0; i < n; i++) {
             st = new StringTokenizer(br.readLine());
             for(int j = 0; j < m; j++) {
-                grid[i][j] = Integer.parseInt(st.nextToken());
+                a[i][j] = Integer.parseInt(st.nextToken());
             }
         }
 
-        int time = 0;
-        int lastCount = 0;
+        q.add(new Pair(0, 0));
+        visited[0][0] = true;
 
-        while(true) {
-            int melted = meltOneSecond();
+        boolean isGlacierExist = false;
 
-            if(melted == 0) break;
+        do {
+            isGlacierExist = simulate();
+        } while(isGlacierExist);
 
-            time++;
-            lastCount = melted;
-        }
-
-        System.out.print(time + " " + lastCount);
+        System.out.print(elapsedTime + " " + lastMeltCnt);
     }
 }
