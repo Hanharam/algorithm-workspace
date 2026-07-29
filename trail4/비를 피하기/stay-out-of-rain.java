@@ -13,11 +13,12 @@ class Pair{
 public class Main {
     public static int n, h, m;
     public static int[][] grid = new int[100][100];
-    public static int[][] answer = new int[100][100];
-    public static int[][] step;
 
-    public static boolean[][] visited;
-    public static Queue<Pair> q;
+    public static int[][] step = new int[100][100];
+    public static boolean[][] visited = new boolean[100][100];
+    public static Queue<Pair> q = new LinkedList<>();
+    public static ArrayList<Pair> sPos = new ArrayList<>();
+
 
     public static boolean inRange(int x, int y) {
         return 0 <= x && x < n && 0 <= y && y < n;
@@ -48,17 +49,12 @@ public class Main {
 
                 if(canGo(nx, ny)) {
                     push(nx, ny, step[p.x][p.y] + 1);
-                    if(grid[nx][ny] == 3) {
-                        return step[nx][ny];
-                    }
                 }
             }
         }
 
         return -1;
     }
-
-    public static ArrayList<Pair> starts = new ArrayList<>();
 
     public static void main(String[] args) throws IOException{
         // Please write your code here.
@@ -72,30 +68,29 @@ public class Main {
             st = new StringTokenizer(br.readLine());
             for(int j = 0; j < n; j++) {
                 grid[i][j] = Integer.parseInt(st.nextToken());
-                if(grid[i][j] == 2) {
-                    starts.add(new Pair(i, j));
-                    answer[i][j] = -1;
+                if(grid[i][j] == 3) {
+                    sPos.add(new Pair(i, j));
                 }
             }
         }
 
-        for(int i = 0; i < h; i++) {
-            visited = new boolean[n][n];
-            q = new LinkedList<>();
-            step = new int[n][n];
-
-            int x = starts.get(i).x;
-            int y = starts.get(i).y;
-
-            q.add(new Pair(x, y));
-            visited[x][y] = true;
-
-            answer[x][y] = bfs();
+        for(int i = 0; i < sPos.size(); i++) {
+            push(sPos.get(i).x, sPos.get(i).y, 0);
         }
+
+        bfs();
+
 
         for(int i = 0; i < n; i++) {
             for(int j = 0; j < n; j++) {
-                System.out.print(answer[i][j] + " ");
+                if(grid[i][j] != 2)
+                    System.out.print(0 + " ");
+                else {
+                    if(!visited[i][j])
+                        System.out.print(-1 + " ");
+                    else
+                        System.out.print(step[i][j] + " ");
+                }
             }
             System.out.println();
         }
