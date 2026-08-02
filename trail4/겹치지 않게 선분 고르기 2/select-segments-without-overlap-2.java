@@ -11,16 +11,15 @@ class Pair implements Comparable<Pair> {
 
     @Override
     public int compareTo(Pair other) {
-        if(this.y == other.y) {
-            return other.x - this.x;
-        }
-        return this.y - other.y;
+        return this.x - other.x;
     }
 }
 
 public class Main {
     public static int n;
-    public static ArrayList<Pair> lines = new ArrayList<>();
+    public static Pair[] lines = new Pair[1000];
+
+    public static int[] dp = new int[1000];
 
     public static void main(String[] args) throws IOException{
         // Please write your code here.
@@ -32,24 +31,29 @@ public class Main {
             int x = Integer.parseInt(st.nextToken());
             int y = Integer.parseInt(st.nextToken());
             
-            lines.add(new Pair(x, y));
+            lines[i] = new Pair(x, y);
         }
 
-        Collections.sort(lines);
+        Arrays.sort(lines, 0, n);
 
-        int cnt = 1;
-        int idx = 0;
         for(int i = 0; i < n; i++) {
-            Pair line = lines.get(i);
-            if(idx == 0) {
-                idx = line.y;
-            }
-            else if(line.x > idx) {
-                idx = line.y;
-                cnt++;
+            dp[i] = 1;
+
+            for(int j = 0; j < i; j++) {
+                int x1I = lines[i].x;
+                int x2J = lines[j].y;
+
+                if(x2J < x1I) {
+                    dp[i] = Math.max(dp[j] + 1, dp[i]);
+                }
             }
         }
 
-        System.out.print(cnt);
+        int ans = 0;
+        for(int i = 0; i < n; i++) {
+            ans = Math.max(dp[i], ans);
+        }
+
+        System.out.print(ans);
     }
 }
