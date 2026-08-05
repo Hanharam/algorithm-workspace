@@ -2,9 +2,32 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    public static int n;
-    public static int[] arr = new int[101];
-    public static int[] dp;
+    public static final int INT_MIN = Integer.MIN_VALUE;
+    public static final int OFFSET = 100000;
+    public static final int MAX_M = 100000;
+    public static final int MAX_N = 100;
+    
+    public static int n, m;
+    public static int[] arr = new int[MAX_N + 1];
+    
+    public static int[][] dp = new int[MAX_N + 1][MAX_M + 1 + OFFSET];
+    
+    public static void init() {
+        for(int i = 0; i <= n; i++) {
+            for(int j = -m; j <= m; j++) {
+                dp[i][j + OFFSET] = INT_MIN;
+            }
+        }
+
+        dp[0][0 + OFFSET] = 0;
+    }
+
+    public static void update(int i, int j, int prevI, int prevJ, int val) {
+        if(prevJ < -m || prevJ > m || dp[prevI][prevJ + OFFSET] == INT_MIN)
+            return;
+        
+        dp[i][j + OFFSET] = Math.max(dp[i][j + OFFSET], dp[prevI][prevJ + OFFSET] + val);
+    }
 
     public static void main(String[] args) throws IOException{
         // Please write your code here.
@@ -12,40 +35,28 @@ public class Main {
         n = Integer.parseInt(br.readLine());
 
         StringTokenizer st = new StringTokenizer(br.readLine());
-        int totalSum = 0;
-        for(int i = 0; i < n; i++) {
+        for(int i = 1; i <= n; i++) {
             arr[i] = Integer.parseInt(st.nextToken());
-            totalSum += arr[i];
+            m += arr[i];
         }
 
-        // dp[i] : (A 그룹의 합) - (B 그룹의 합) = i 일 때, A 그룹 합의 최댓값
-        dp = new int[totalSum + 1];
-        Arrays.fill(dp, -1);
-        dp[0] = 0;
+        init();
 
-        for(int i = 0; i < n; i++) {
-            int x = arr[i];
-            int[] nextDp = dp.clone();
+        for(int i = 1; i <= n; i++) {
+            for(int j = -m; j <= m; j++) {
+                
+                // 1. 그룹 A에 i 번째 원소 추가
+                update(i, j, i - 1, j - arr[i], arr[i]);
 
-            for(int diff = 0; diff <= totalSum; diff++) {
-                if(dp[diff] == -1) continue;
+                // 2. 그룹 B에 i 번째 원소 추가
+                update(i, j, i - 1, j + arr[i], 0);
 
-                // 1. A에 넣기
-                if(diff + x <= totalSum) {
-                    nextDp[diff + x] = Math.max(nextDp[diff + x], dp[diff] + x);
-                }
-
-                // 2. B에 넣기
-                if(diff >= x) {
-                    nextDp[diff - x] = Math.max(nextDp[diff - x], dp[diff]);
-                } else {
-                    nextDp[x - diff] = Math.max(nextDp[x - diff], dp[diff] - diff + x);
-                }
+                // 3. 그룹 C에 i 번째 원소 추가
+                update(i, j, i - 1, j, 0);
             }
-            dp = nextDp;
         }
 
-        System.out.print(dp[0]);
+        System.out.print(dp[n][0 + OFFSET]);
     }
 }
 
