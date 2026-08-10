@@ -69,12 +69,6 @@ public class Main {
                 }
             }
         }
-
-        int ans = Integer.MIN_VALUE;
-        for(int i = 20; i <= n; i++) {
-            ans = Math.max(ans, dp[i][11][9]);
-        }
-
-        System.out.print(ans);
+        System.out.print(dp[n][11][9]);
     }
 }
