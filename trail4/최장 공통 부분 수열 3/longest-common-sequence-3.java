@@ -2,125 +2,110 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    public static int n, m;
-    public static int[] a, b;
-    public static int[][] dp;
+    public static final int INF = 1987654321;
 
     public static void main(String[] args) throws IOException{
         // Please write your code here.
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
 
-        n = Integer.parseInt(st.nextToken());
-        m = Integer.parseInt(st.nextToken());
+        int n = Integer.parseInt(st.nextToken());
+        int m = Integer.parseInt(st.nextToken());
 
-        a = new int[n + 2];
-        b = new int[m + 2];
+        ArrayList<Integer> a = new ArrayList<>();
+        ArrayList<Integer> b = new ArrayList<>();
 
-        TreeSet<Integer> set = new TreeSet<>();
+        int[][] dp = new int[n + 1][m + 1];
+        Pair[][] path = new Pair[n + 1][m + 1];
+        int[][] curBest = new int[n + 1][m + 1];
+
+        a.add(0);
+        b.add(0);
 
         st = new StringTokenizer(br.readLine());
         for(int i = 1; i <= n; i++) {
-            a[i] = Integer.parseInt(st.nextToken());
-            set.add(a[i]);
+            a.add(Integer.parseInt(st.nextToken()));
         }
 
         st = new StringTokenizer(br.readLine());
         for(int i = 1; i <= m; i++) {
-            b[i] = Integer.parseInt(st.nextToken());
-            set.add(b[i]);
+            b.add(Integer.parseInt(st.nextToken()));
+            
         }
 
-        ArrayList<Integer> values = new ArrayList<>(set);
+        Collections.reverse(a.subList(1, n + 1));
+        Collections.reverse(b.subList(1, m + 1));
 
-        int K = values.size();
-
-        HashMap<Integer, Integer> index = new HashMap<>();
-
-        for(int i = 0; i < K; i++) {
-            index.put(values.get(i), i);
+        for(int i = 0; i <= n; i++) {
+            for(int j = 0; j <= m; j++) {
+                curBest[i][j] = INF;
+                path[i][j] = new Pair(0, 0);
+            }
         }
+        curBest[0][0] = 0;
 
-        dp = new int[n + 2][m + 2];
+        // dp[i][j] == 문자열 a는 i 번째까지, 문자열 b는 j번째까지 보았을 때 최장 공통 부분 수열의 길이
+        // cur_best[i][j] == 문자열 a는 i번째까지, 문자열 b는 j번째까지 보았을 때 최장 공통 부분 수열 중
+        // 가장 마지막으로 선택된 값을 최소화 시킨 수열의 그 최솟값
+        // path[i][j] == 그러한 최장 공통 부분 수열이 어느 이전 정보에서 왔는지의 정보
+        for(int i = 1; i <= n; i++) {
+            for(int j = 1; j <= m; j++) {
+                // 각 단계에서 최적의 해를 찾는다.
+                // 현재 dp[i][j]에 저장된 후보보다 위쪽 상태 dp[i - 1][j]가 더 좋은가?
+                // 최장 길이가 더 긴 것 선택, 길이가 같다면 curBest가 작은 값 선택
+                if(dp[i - 1][j] > dp[i][j] || (dp[i - 1][j] == dp[i][j] && curBest[i - 1][j] < curBest[i][j])) {
+                    dp[i][j] = dp[i - 1][j];
+                    path[i][j] = new Pair(i - 1, j);
+                    curBest[i][j] = curBest[i - 1][j];
+                }
 
-        for (int i = n; i >= 1; i--) {
-            for (int j = m; j >= 1; j--) {
+                if(dp[i][j - 1] > dp[i][j] || (dp[i][j - 1] == dp[i][j]) && curBest[i][j - 1] < curBest[i][j]) {
+                    dp[i][j] = dp[i][j - 1];
+                    path[i][j] = new Pair(i, j - 1);
+                    curBest[i][j] = curBest[i][j - 1];
+                }
 
-                if (a[i] == b[j]) {
-                    dp[i][j] = dp[i + 1][j + 1] + 1;
-                } else {
-                    dp[i][j] =
-                            Math.max(dp[i + 1][j], dp[i][j + 1]);
+                if(a.get(i).equals(b.get(j)) && (dp[i - 1][j - 1] + 1 > dp[i][j] || (dp[i - 1][j - 1] == dp[i][j] && a.get(i) < curBest[i][j]))) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                    path[i][j] = new Pair(i - 1, j - 1);
+                    curBest[i][j] = a.get(i);
                 }
             }
         }
 
-        int[][] nextA = new int[n + 2][K];
-        int[][] nextB = new int[m + 2][K];
-
-        Arrays.fill(nextA[n + 1], -1);
-        Arrays.fill(nextB[m + 1], -1);
-
-        for(int i = n; i >= 1; i--) {
-            System.arraycopy(
-                nextA[i + 1], 0,
-                nextA[i], 0,
-                K
-            );
-
-            nextA[i][index.get(a[i])] = i;
-        }
-
-        for(int i = m; i >= 1; i--) {
-            System.arraycopy(
-                nextB[i + 1], 0,
-                nextB[i], 0,
-                K
-            );
-
-            nextB[i][index.get(b[i])] = i;
-        }
-
-        ArrayList<Integer> answer = new ArrayList<>();
-
-        int x = 1;
-        int y = 1;
-
-        int len = dp[1][1];
-
-        while (len > 0) {
-
-            // 작은 값부터 확인
-            for (int k = 0; k < K; k++) {
-
-                int p = nextA[x][k];
-                int q = nextB[y][k];
-
-                // 둘 중 하나에 존재하지 않음
-                if (p == -1 || q == -1)
-                    continue;
-
-                // 이 값을 선택해도 최장 길이를 유지할 수 있는가?
-                if (1 + dp[p + 1][q + 1] == len) {
-
-                    answer.add(values.get(k));
-
-                    x = p + 1;
-                    y = q + 1;
-
-                    len--;
-
-                    break;
-                }
+        // 최장 공콩 부분 수열 추적
+        ArrayList<Integer> lcs = new ArrayList<>();
+        for (int i = n, j = m; i > 0 && j > 0;) {
+            if(path[i][j].equals(new Pair(i - 1, j - 1)) && a.get(i).equals(b.get(j))) {
+                lcs.add(a.get(i));
+                i--; j--;
+            } else {
+                Pair p = path[i][j];
+                i = p.x;
+                j = p.y;
             }
         }
 
-        StringBuilder sb = new StringBuilder();
+        // 최장 공통 부분 수열 출력
+        for(int i = 0; i < lcs.size(); i++) {
+            System.out.print(lcs.get(i) + " ");
+        }
+        System.out.println();
+    }
 
-        for (int v : answer) {
-            sb.append(v).append(' ');
+    static class Pair {
+        int x, y;
+        Pair(int x, int y) {
+            this.x = x;
+            this.y = y;
         }
 
-        System.out.println(sb);
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) return true;
+            if(!(o instanceof Pair)) return false;
+            Pair pair = (Pair) o;
+            return x == pair.x && y == pair.y;
+        }
     }
 }
