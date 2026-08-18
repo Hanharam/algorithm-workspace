@@ -12,17 +12,14 @@ public class Main {
             m.put(ch, m.getOrDefault(ch, 0) + 1);
         }
 
-        boolean isTrue = true;
-
         for(char ch : m.keySet()) {
             int num = m.get(ch);
 
             if(num == 1) {
                 System.out.print(ch);
-                isTrue = false;
-                break;
+                System.exit(0);
             }
         }
-        if(isTrue) System.out.print("None");
+        System.out.print("None");
     }
 }
