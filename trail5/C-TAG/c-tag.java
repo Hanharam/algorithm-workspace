@@ -3,10 +3,8 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) throws IOException{
-        // Please write your code here.
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
-
         int n = Integer.parseInt(st.nextToken());
         int m = Integer.parseInt(st.nextToken());
 
@@ -16,13 +14,11 @@ public class Main {
         for(int i = 0; i < n; i++) {
             a[i] = br.readLine().toCharArray();
         }
-
         for(int i = 0; i < n; i++) {
             b[i] = br.readLine().toCharArray();
         }
-        
-        int ans = 0;
 
+        int ans = 0;
         for(int i = 0; i < m; i++) {
             for(int j = i + 1; j < m; j++) {
                 for(int k = j + 1; k < m; k++) {
@@ -34,21 +30,21 @@ public class Main {
                         s.add(key);
                     }
 
-                    boolean possible = true;
+                    boolean isTrue = true;
 
                     for(int e = 0; e < n; e++) {
                         String key = "" + b[e][i] + b[e][j] + b[e][k];
 
                         if(s.contains(key)) {
-                            possible = false;
+                            isTrue = false;
                             break;
                         }
                     }
 
-                    if(possible) ans++;
+                    if(isTrue) ans++;
                 }
             }
         }
-        System.out.println(ans);
+        System.out.print(ans);
     }
 }
