@@ -13,6 +13,7 @@ class Node {
 }
 
 public class Main {
+    public static StringBuilder sb = new StringBuilder();
     public static Node insertPrev(Node cur, String str) {
         Node newNode = new Node(str);
 
@@ -50,15 +51,13 @@ public class Main {
     }
 
     public static void printAnswer(Node cur) {
-        if(cur.prev != null) System.out.print(cur.prev.str + " ");
-        else System.out.print("(Null) ");
+        if(cur.prev != null) sb.append(cur.prev.str).append(" ");
+        else sb.append("(Null) ");
 
-        System.out.print(cur.str + " ");
+        sb.append(cur.str).append(" ");
 
-        if(cur.next != null) System.out.print(cur.next.str + " ");
-        else System.out.print("(Null) ");
-
-        System.out.println();
+        if(cur.next != null) sb.append(cur.next.str).append(" \n");
+        else sb.append("(Null) \n");
     }
 
     public static void main(String[] args) throws IOException{
@@ -86,5 +85,6 @@ public class Main {
 
             printAnswer(cur);
         }
+        System.out.print(sb);
     }
 }
