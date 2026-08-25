@@ -21,34 +21,44 @@ public class Main {
     public static void main(String[] args) throws IOException{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
+        StringBuilder sb = new StringBuilder();
 
         int n = Integer.parseInt(st.nextToken());
         int m = Integer.parseInt(st.nextToken());
 
         HashMap<Integer, Node> nodes = new HashMap<>();
 
-        Node head = new Node(999);
-        Node prev = new Node(999);
+        Node head = null;
+        Node prev = null;
+
         st = new StringTokenizer(br.readLine());
         for(int i = 0; i < n; i++) {
             int num = Integer.parseInt(st.nextToken());
-            Node cur = new Node(num);
 
+            Node cur = new Node(num);
             nodes.put(num, cur);
-            if(i > 0) {
+
+            if(i == 0) {
+                head = cur;
+            } else {
                 connect(prev, cur);
             }
+
             prev = cur;
-            if(i == 0) head = cur;
         }
+
+        connect(prev, head);
         connect(prev, head);
 
         for(int i = 0; i < m; i++) {
             int num = Integer.parseInt(br.readLine());
             Node cur = nodes.get(num);
-            System.out.println(cur.next.num + " " + cur.prev.num);
+
+            sb.append(cur.next.num).append(" ").append(cur.prev.num).append("\n");
+            
             connect(cur.prev, cur.next);
             cur.next = cur.prev = null;
         }
+        System.out.print(sb);
     }
 }
