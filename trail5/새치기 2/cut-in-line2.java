@@ -1,166 +1,151 @@
 import java.util.*;
 import java.io.*;
 
-class Node {
-    String name;
-    Node prev, next;
-
-    public Node(String name) {
-        this.name = name;
-        prev = next = null;
-    }
-}
-
 public class Main {
-    public static int n, m, q;
+    static final int MAX_N = 100000;
+    static final int MAX_M = 10;
 
-    public static HashMap<String, Node> nodes = new HashMap<>();
-    public static Node[] heads;
-    public static Node[] tails;
+    static class Node {
+        String name;
+        Node prev, next;
 
-    public static void connect(Node s, Node e) {
+        Node(String name) {
+            this.name = name;
+            prev = next = null;
+        }
+    }
+
+    static Node[] nodes = new Node[MAX_N + 1];
+    static Node[] head = new Node[MAX_M + 1];
+    static Node[] tail = new Node[MAX_M + 1];
+    static int[] lineNum = new int[MAX_N + 1];
+    static HashMap<String, Integer> personId = new HashMap<>();
+
+    static StringBuilder sb = new StringBuilder();
+
+    static void connect(Node s, Node e) {
         if(s != null) s.next = e;
         if(e != null) e.prev = s;
     }
 
-    public static void checkHeadTail(Node cur) {
-        for(int i = 1; i <= m; i++) {
-            if(heads[i] == cur) {
-                if(cur.next == null) heads[i] = null;
-                else {
-                    heads[i] = cur.next;
-                }
-            }
-            if(tails[i] == cur) {
-                if(cur.prev == null) tails[i] = null;
-                else {
-                    tails[i] = cur.prev;
-                }
-            }
-        }
-    }
+    static void pop(Node i) {
+        int l = lineNum[personId.get(i.name)];
 
-    public static void pop(Node cur) {
-        connect(cur.prev, cur.next);
-        cur.next = cur.prev = null;
-    }
+        if(l == 0) return;
 
-    public static void insertPrev(Node a, Node b) {
-        if(a.next == b) return;
+        if(head[l] == i) head[l] = head[l].next;
+        if(tail[l] == i) tail[l] = tail[l].prev;
 
-        checkHeadTail(a);
+        connect(i.prev, i.next);
         
-        for(int i = 1; i <= m; i++) {
-            if(heads[i] == b) {
-                heads[i] = a;
-            }
-        }
+        lineNum[personId.get(i.name)] = 0;
+        i.next = i.prev = null;
+    }
 
+    static void insertFront(Node a, Node b) {
+        int lineNumB = lineNum[personId.get(b.name)];
+        if(head[lineNumB] == b) head[lineNumB] = a;
         pop(a);
 
         connect(b.prev, a);
         connect(a, b);
+
+        lineNum[personId.get(a.name)] = lineNumB;
     }
 
-    public static void insertRangePrev(Node a, Node b, Node c) {
-        if(b.next == c) return;
+    static void popRangeAndInsertPrev(Node a, Node b, Node c) {
+        int lineNumA = lineNum[personId.get(a.name)];
+        int lineNumC = lineNum[personId.get(c.name)];
 
-        for(int i = 1; i <= m; i++) {
-            if(heads[i] == a) {
-                if(b.next != null) heads[i] = b.next;
-                else heads[i] = null;
-            }
-        }
-        for(int i = 1; i <= m; i++) {
-            if(heads[i] == c) {
-                heads[i] = a;
-            }
+        if(head[lineNumA] == a) head[lineNumA] = b.next;
+        if(tail[lineNumA] == b) head[lineNumA] = a.prev;
+
+        connect(a.prev, b.next);
+
+        if(head[lineNumC] == c) {
+            connect(b, c);
+            head[lineNumC] = a;
+        } else {
+            connect(c.prev, a);
+            connect(b, c);
         }
 
-        Node prevA = a.prev;
-        Node nextB = b.next;
-        Node prevC = c.prev;
-        // v  a s d f b | c e
-        connect(prevA, nextB);
-        connect(prevC, a);
-        connect(b, c);
+        Node cur = a;
+        while(cur != b) {
+            lineNum[personId.get(cur.name)] = lineNumC;
+            cur = cur.next;
+        }
+        lineNum[personId.get(cur.name)] = lineNumC;
+    }
+
+    static void printLine(int l) {
+        Node cur = head[l];
+
+        if(cur == null) {
+            sb.append("-1").append("\n");
+            return;
+        }
+
+        while(cur != null) {
+            sb.append(cur.name).append(" ");
+            cur = cur.next;
+        }
+        sb.append("\n");
+        return;
     }
 
     public static void main(String[] args) throws IOException{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
 
-        n = Integer.parseInt(st.nextToken());
-        m = Integer.parseInt(st.nextToken());
-        q = Integer.parseInt(st.nextToken());
+        int n = Integer.parseInt(st.nextToken());
+        int m = Integer.parseInt(st.nextToken());
+        int q = Integer.parseInt(st.nextToken());
 
-        heads = new Node[m + 1];
-        tails = new Node[m + 1];
-
-        int x = n / m;
-
+        int personNum = 1;
         st = new StringTokenizer(br.readLine());
-        for(int i = 1; i <= n; i++) {
-            String name = st.nextToken();
-            Node cur = new Node(name);
-            nodes.put(name, cur);
-
-            int index = (int) Math.ceil((double)i/x);
-
-            int order = (i - 1) % x + 1; 
-
-            if(order == 1) {
-                heads[index] = cur;
-                tails[index] = cur;
-            } else {
-                connect(tails[index], cur);
-                tails[index] = cur;
-            }
-        }
-
-        for(int i = 0; i < q; i++) {
-            st = new StringTokenizer(br.readLine());
-            int command = Integer.parseInt(st.nextToken());
-            String a = st.nextToken();
-            
-            if(command == 1) {
-                String b = st.nextToken();
-                insertPrev(nodes.get(a), nodes.get(b));
-            } else if(command == 2) {
-                pop(nodes.get(a));
-            } else if(command == 3) {
-                String b = st.nextToken();
-                String c = st.nextToken();
-                insertRangePrev(nodes.get(a), nodes.get(b), nodes.get(c));
-            }
-        }
-
-        StringBuilder sb = new StringBuilder();
         for(int i = 1; i <= m; i++) {
-            Node start = heads[i];
-            if(start == null) sb.append("-1\n");
-            else {
-                while(start != null) {
-                    sb.append(start.name).append(" ");
-                    start = start.next;
+            for(int j = 0; j < n / m; j++) {
+                String t = st.nextToken();
+                personId.put(t, personNum);
+                lineNum[personNum] = i;
+
+                if(j == 0) {
+                    tail[i] = head[i] = nodes[personNum] = new Node(t);
+                } else {
+                    nodes[personNum] = new Node(t);
+                    connect(tail[i], nodes[personNum]);
+                    tail[i] = nodes[personNum];
                 }
-                sb.append("\n");
+
+                personNum++;
             }
         }
+
+        while(q-- > 0) {
+            st = new StringTokenizer(br.readLine());
+            int option = Integer.parseInt(st.nextToken());
+
+            if(option == 1) {
+                String x = st.nextToken();
+                String y = st.nextToken();
+                int a = personId.get(x), b = personId.get(y);
+                insertFront(nodes[a], nodes[b]);
+            } else if (option == 2) {
+                String x = st.nextToken();
+                int a = personId.get(x);
+                pop(nodes[a]);
+            } else if (option == 3) {
+                String x = st.nextToken();
+                String y = st.nextToken();
+                String z = st.nextToken();
+                int a = personId.get(x), b = personId.get(y), c = personId.get(z);
+                popRangeAndInsertPrev(nodes[a], nodes[b], nodes[c]);
+            }
+        }
+        
+        for(int i = 1; i <= m; i++) printLine(i);
+
         System.out.print(sb);
     }
 }
-
-// N = 4 은 사람들의 수, M = 2은 줄의 수
-
-// X = N/M = 2
-
-// i 번째 사람은 ceiling(i/X) 번 줄의 (i - 1) mod (X) + 1 번 째로 서있음
-
-// 1 -> ceiling(1/2) == 1번 줄 || (1 - 1 == 0) mod (2) + 1 ->  1 번 째
-
-// 2 -> ceiling(2/2) == 1번 줄 || (2 - 1 == 1) mod (2) + 1 -> 2 번 째
-
-// 3 -> ceiling(3/2) == 2번 줄 || (3 - 1 == 2) mod (2) + 1 -> 1 번 째
-
-// 4 -> ceiling(4/2) == 2번 줄 || (4 - 1 == 3) mod (2) + 1 -> 2 번 째
