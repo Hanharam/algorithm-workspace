@@ -2,71 +2,41 @@ import java.util.*;
 import java.io.*;
 
 public class Main {
+    public static final int MAX_A = 1000000;
+    public static final int MAX_N = 100000;
 
-    static int lowerBound(int[] arr, int x) {
-        int left = 0;
-        int right = arr.length;
 
-        while(left < right) {
-            int mid = (left + right) / 2;
+    public static int n, q;
+    public static int[] arr = new int[MAX_N + 1];
+    public static int[] prefixSum = new int[MAX_A + 1];
 
-            if(arr[mid] >= x) {
-                right = mid;
-            } else {
-                left = mid + 1;
-            }
-        }
-
-        return left;
-    }
-
-    static int upperBound(int[] arr, int x) {
-        int left = 0;
-        int right = arr.length;
-
-        while(left < right) {
-            int mid = (left + right) / 2;
-
-            if(arr[mid] > x) {
-                right = mid;
-            } else {
-                left = mid + 1;
-            }
-        }
-
-        return left;
+    public static int getSum(int s, int e) {
+        if(s == 0) return prefixSum[e];
+        return prefixSum[e] - prefixSum[s - 1];
     }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
 
-        int n = Integer.parseInt(st.nextToken());
-        int q = Integer.parseInt(st.nextToken());
-
-        int[] arr = new int[n];
+        n = Integer.parseInt(st.nextToken());
+        q = Integer.parseInt(st.nextToken());
 
         st = new StringTokenizer(br.readLine());
         for(int i = 0; i < n; i++) {
             arr[i] = Integer.parseInt(st.nextToken());
+            prefixSum[arr[i]]++;
         }
 
-        Arrays.sort(arr);
+        for(int i = 1; i <= MAX_A; i++) {
+            prefixSum[i] += prefixSum[i - 1];
+        }
 
-        StringBuilder sb = new StringBuilder();
-
-        for(int i = 0; i < q; i++) {
+        for(int i = 1; i <= q; i++) {
             st = new StringTokenizer(br.readLine());
-
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
-
-            int s = lowerBound(arr, a);
-            int e = upperBound(arr, b);
-
-            sb.append(e - s).append('\n');
+            int l = Integer.parseInt(st.nextToken());
+            int r = Integer.parseInt(st.nextToken());
+            System.out.println(getSum(l, r));
         }
-
-        System.out.print(sb);
     }
 }
