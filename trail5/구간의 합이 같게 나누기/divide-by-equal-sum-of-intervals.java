@@ -2,51 +2,63 @@ import java.util.*;
 import java.io.*;
 
 public class Main {
+    public static final int MAX_N = 100000;
     public static int n;
-    public static int[] arr;
-    public static long sum = 0;
 
-    public static long[] L, R;
+    public static long[] arr = new long[MAX_N];
+    public static long[] L = new long[MAX_N];
+    public static long[] R = new long[MAX_N];
 
     public static void main(String[] args) throws IOException{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         n = Integer.parseInt(br.readLine());
 
-        arr = new int[n + 1];
-        L = new long[n + 1];
-        R = new long[n + 2];
-
         StringTokenizer st = new StringTokenizer(br.readLine());
-        for(int i = 1; i <= n; i++) {
+        for(int i = 0; i < n; i++) {
             arr[i] = Integer.parseInt(st.nextToken());
+        }
+        
+        long totalSum = 0;
+        for(int i = 0; i < n; i++) {
+            totalSum += arr[i];
+        }
+
+        if(totalSum % 4 != 0) {
+            System.out.print(0);
+            System.exit(0);
+        }
+
+        long targetSum = totalSum / 4;
+
+        L[0] = 0;
+        long sum = arr[0];
+        long cnt = (sum == targetSum) ? 1 : 0;
+        for(int i = 1; i < n; i++) {
             sum += arr[i];
+
+            // 합이 2 * targetSum이 되면
+            // 2개의 구간을 나눌 수 있는 가능성이 있음
+            if(sum == 2 * targetSum) L[i] = cnt;
+
+            // 합이 targetSum 인 경우
+            // cnt 값 갱신
+            if(sum == targetSum) cnt++;
         }
 
-        for(int i = 1; i <= n; i++) {
-            L[i] = L[i - 1] + arr[i];
+        R[n - 1] = 0;
+        sum = arr[n - 1];
+        cnt = (sum == targetSum) ? 1 : 0;
+        for(int i = n - 2; i >= 0; i--) {
+            sum += arr[i];
+
+            if(sum == 2 * targetSum) R[i] = cnt;
+
+            if(sum == targetSum) cnt++;
         }
 
-        for(int i = n; i >= 1; i--) {
-            R[i] = R[i + 1] + arr[i];
-        }
-
-        Long ans = 0l;
-        for(int i = 2; i <= n - 2; i++) {
-            if(L[i] == sum/2 && R[i + 1] == sum/2) {
-
-                int cntL = 0;
-                for(int j = 1; j < i; j++) {
-                    if(L[j] == sum/4 && R[j + 1] - R[i + 1] == sum/4) cntL++;
-                }
-
-                int cntR = 0;
-                for(int j = i + 1; j < n; j++) {
-                    if(R[j + 1] == sum/4 && L[j] - L[i] == sum/4) cntR++;
-                }
-
-                ans += cntL * cntR;
-            }
-        }
+        long ans = 0;
+        for(int i = 1; i < n - 1; i++) 
+            ans += (long) L[i] * R[i + 1];
         System.out.print(ans);
     }
 }
