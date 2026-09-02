@@ -37,7 +37,7 @@ public class Main {
 
         Collections.sort(points);
 
-        TreeSet<Integer> segs = new TreeSet<>();
+        PriorityQueue<Integer> segs = new PriorityQueue<>();
         HashMap<Integer, Integer> mapper = new HashMap<>();
 
         for(int i = 1; i <= n; i++) {
@@ -48,12 +48,12 @@ public class Main {
             int index = points.get(i).index;
             
             if(points.get(i).v == 1) {
-                int seatNum = segs.pollFirst();
+                int seatNum = segs.poll();
                 mapper.put(index, seatNum);
                 seat[index] = seatNum;
                 // System.out.printf("[IN] Time: %d, Index: %d, Seat: %d\n", points.get(i).x, index, seatNum);
             } else {
-                segs.add(mapper.get(index));
+                segs.add(seat[index]);
                 // System.out.printf("[OUT] Time: %d, Index: %d, Seat: %d\n", points.get(i).x, index, mapper.get(index));
             }
         }
