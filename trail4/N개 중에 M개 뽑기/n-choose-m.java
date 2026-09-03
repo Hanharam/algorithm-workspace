@@ -1,40 +1,35 @@
-import java.io.*;
 import java.util.*;
+import java.io.*;
 
 public class Main {
     public static int n, m;
-    public static ArrayList<Integer> answer = new ArrayList<>();
-    public static StringBuilder sb = new StringBuilder();
+    public static ArrayList<Integer> ans = new ArrayList<>();
 
-    public static void printArray() {
-        for(int i = 0; i < m; i++) {
-            sb.append(answer.get(i)).append(" ");
-        }
-        sb.append("\n");
-    }
-
-    public static void choose(int curNum, int cnt) {
-        if(curNum == m + 1) {
-            printArray();
+    public static void choose(int idx, int cnt) {
+        if(cnt == m) {
+            for(int num : ans) {
+                System.out.print(num + " ");
+            }
+            System.out.println();
+            return;
         }
 
-        for(int i = cnt; i <= n; i++) {
-            answer.add(i);
-            choose(curNum + 1, i + 1);
-            answer.remove(answer.size() - 1);
-        }
+        if(idx > n) return;
+
+        ans.add(idx);
+        choose(idx + 1, cnt + 1);
+
+        ans.remove(ans.size() - 1);
+        choose(idx + 1, cnt);
     }
 
     public static void main(String[] args) throws IOException{
-        // Please write your code here.
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
 
         n = Integer.parseInt(st.nextToken());
         m = Integer.parseInt(st.nextToken());
 
-        choose(1, 1);
-
-        System.out.print(sb);
+        choose(1, 0);
     }
 }
