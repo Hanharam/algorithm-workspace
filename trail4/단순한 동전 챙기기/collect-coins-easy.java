@@ -1,97 +1,66 @@
 import java.util.*;
 import java.io.*;
 
-class Pair {
-    int x, y;
-    public Pair(int x, int y) {
+class Pair implements Comparable<Pair>{
+    int x, y, value;
+
+    public Pair(int x, int y, int value) {
         this.x = x;
         this.y = y;
+        this.value = value;
+    }
+
+    @Override
+    public int compareTo(Pair p) {
+        return value - p.value;
     }
 }
 
 public class Main {
-    public static final int INT_MAX = Integer.MAX_VALUE;
-    public static final int COIN_NUM = 9;
-    public static final int MAX_N = 20;
-
     public static int n;
-    public static int m = 3;
+    public static int ans = Integer.MAX_VALUE;
+    public static char[][] grid = new char[20][20];
+    public static Pair start, end;
 
-    public static char[][] grid = new char[MAX_N][MAX_N];
+    public static ArrayList<Pair> coins = new ArrayList<Pair>();
 
-    public static ArrayList<Pair> coinPos = new ArrayList<>();
-    public static ArrayList<Pair> selectedPos = new ArrayList<>();
-    
-    public static Pair startPos;
-    public static Pair endPos;
-
-    public static int ans = INT_MAX;
-
-    public static int dist(Pair a, Pair b) {
-        int ax = a.x;
-        int ay = a.y;
-
-        int bx = b.x;
-        int by = b.y;
-
-        return Math.abs(ax - bx) + Math.abs(ay - by);
-    }
-
-    public static int calc() {
-        int numMoves = dist(startPos, selectedPos.get(0));
-        for(int i = 0; i < m - 1; i++) {
-            numMoves += dist(selectedPos.get(i), selectedPos.get(i + 1));
-        }
-
-        numMoves += dist(selectedPos.get(m - 1), endPos);
-
-        return numMoves;
-    }
-
-    public static void findMinMoves(int currIdx, int cnt) {
-        if(cnt == m) {
-            ans = Math.min(ans, calc());
+    public static void choose(int idx, int dist, int cnt, int px, int py) {
+        if(cnt == 3) {
+            ans = Math.min(ans, dist + Math.abs(px - end.x) + Math.abs(py - end.y));
             return;
         }
 
-        if(currIdx == (int) coinPos.size()) return;
+        if(idx >= coins.size()) return;
 
-        findMinMoves(currIdx + 1, cnt);
+        
+        int x = coins.get(idx).x;
+        int y = coins.get(idx).y;
+        int curDist = dist + Math.abs(x - px) + Math.abs(y - py);
+        choose(idx + 1, curDist, cnt + 1, x, y);
 
-        selectedPos.add(coinPos.get(currIdx));
-        findMinMoves(currIdx + 1, cnt + 1);
-        selectedPos.remove(selectedPos.size() - 1);
+        choose(idx + 1, dist, cnt, px, py);
     }
 
     public static void main(String[] args) throws IOException{
-        Scanner sc = new Scanner(System.in);
-        n = sc.nextInt();
-        
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        n = Integer.parseInt(br.readLine());
+
         for(int i = 0; i < n; i++) {
-            String str = sc.next();
+            grid[i] = br.readLine().toCharArray();
+        }
+
+        for(int i = 0; i < n; i++) {
             for(int j = 0; j < n; j++) {
-                grid[i][j] = str.charAt(j);
-                if(grid[i][j] == 'S')
-                    startPos = new Pair(i, j);
-                if(grid[i][j] == 'E')
-                    endPos = new Pair(i, j);
+                if('0' < grid[i][j] && grid[i][j] <= '9') coins.add(new Pair(i, j, grid[i][j] - '0'));
+                else if(grid[i][j] == 'S') start = new Pair(i, j, 0);
+                else if(grid[i][j] == 'E') end = new Pair(i, j, 0);
             }
         }
-        
-        for(int num = 1; num <= COIN_NUM; num++) 
-            for(int i = 0; i < n; i++)
-                for(int j = 0; j < n; j++)
-                    if(grid[i][j] == num + '0')
-                        coinPos.add(new Pair(i, j));
-        
-        findMinMoves(0, 0);
-        
-        if(ans == INT_MAX)
-            ans = -1;
-        
-        System.out.print(ans);
+
+        Collections.sort(coins);
+
+        choose(0, 0, 0, start.x, start.y);
+
+        System.out.print(ans == Integer.MAX_VALUE ? -1 : ans);
     }
 }
-
-// 코인들은 순서대로 pos 에 넣은 다음에
-// 하나씩 꺼내서 쓰면서 3개 선택되었을 때 거리 계산하기
