@@ -1,24 +1,33 @@
 import java.util.*;
 import java.io.*;
 
-class Point implements Comparable<Point>{
-    int x, val;
+class Candy implements Comparable<Candy> {
+    int x, cnt;
 
-    public Point(int x, int val) {
+    public Candy(int x, int cnt) {
         this.x = x;
-        this.val = val;
+        this.cnt = cnt;
     }
 
     @Override
-    public int compareTo(Point p) {
-        if(this.x != p.x) return x - p.x;
-        return val - p.val;
+    public int compareTo(Candy c) {
+        return x - c.x;
     }
 }
 
 public class Main {
+    public static final int MAX_N = 100000;
+
     public static int n, k;
-    public static int[] basket = new int[1000001];
+    public static Candy[] candies = new Candy[MAX_N + 1];
+
+    public static int getPosOfCandy(int candyIdx) {
+        return candies[candyIdx].x;
+    }
+
+    public static int getNumOfCandy(int candyIdx) {
+        return candies[candyIdx].cnt;
+    }
 
     public static void main(String[] args) throws IOException{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -27,27 +36,29 @@ public class Main {
         n = Integer.parseInt(st.nextToken());
         k = Integer.parseInt(st.nextToken());
 
-        for(int i = 0; i < n; i++) {
+        for(int i = 1; i <= n; i++) {
             st = new StringTokenizer(br.readLine());
 
             int val = Integer.parseInt(st.nextToken());
             int x = Integer.parseInt(st.nextToken());
-
-            basket[x] += val;
+            candies[i] = new Candy(x, val);
         }
 
-        long ans = 0;
+        Arrays.sort(candies, 1, n + 1);
 
+        int ans = 0;
+
+        int totalNums = 0;
         int j = 0;
-        long sum = 0;
-        for(int i = 0; i < 1000001; i++) {
-            while(j <= i + 2 * k && j < 1000001) {
-                sum += basket[j];
+
+        for(int i = 1; i <= n; i++) {
+            while(j + 1 <= n && getPosOfCandy(j + 1) - getPosOfCandy(i) <= 2 * k) {
+                totalNums += getNumOfCandy(j + 1);
                 j++;
             }
 
-            ans = Math.max(ans, sum);
-            sum -= basket[i];
+            ans = Math.max(ans, totalNums);
+            totalNums -= getNumOfCandy(i);
         }
         System.out.print(ans);
     }
