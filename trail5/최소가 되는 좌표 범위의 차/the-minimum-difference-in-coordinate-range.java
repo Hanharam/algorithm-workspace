@@ -16,8 +16,35 @@ class Pair implements Comparable<Pair>{
     }
 }
 
+class Target implements Comparable<Target> {
+    int x, y;
+
+    public Target(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    @Override
+    public int compareTo(Target t) {
+        if(y != t.y) return y - t.y;
+        return x - t.x;
+    }
+}
+
 public class Main {
     public static int n , d;
+    public static Pair[] pairs = new Pair[100001];
+    public static TreeSet<Target> pointCount = new TreeSet<>();
+
+    public static int getMin() {
+        if(pointCount.isEmpty()) return 0;
+        return pointCount.first().y;
+    }
+
+    public static int getMax() {
+        if(pointCount.isEmpty()) return 0;
+        return pointCount.last().y;
+    }
 
     public static void main(String[] args) throws IOException{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -26,9 +53,7 @@ public class Main {
         n = Integer.parseInt(st.nextToken());
         d = Integer.parseInt(st.nextToken());
 
-        Pair[] pairs = new Pair[n];
-
-        for(int i = 0; i < n; i++) {
+        for(int i = 1; i <= n; i++) {
             st = new StringTokenizer(br.readLine());
             int x = Integer.parseInt(st.nextToken());
             int y = Integer.parseInt(st.nextToken());
@@ -36,40 +61,20 @@ public class Main {
             pairs[i] = new Pair(x, y);
         }
 
-        Arrays.sort(pairs);
-
-        Deque<Integer> maxDeque = new ArrayDeque<>();
-        Deque<Integer> minDeque = new ArrayDeque<>();
+        Arrays.sort(pairs, 1, n + 1);
 
         int ans = Integer.MAX_VALUE;
-
-        int i = 0;
-        for(int j = 0; j < n; j++) {
-
-            while(!maxDeque.isEmpty() && pairs[maxDeque.peekLast()].y <= pairs[j].y) {
-                maxDeque.pollLast();
+        int j = 0;
+        for(int i = 1; i < n; i++) {
+            while(j + 1 <= n && getMax() - getMin() < d) {
+                pointCount.add(new Target(pairs[j + 1].x, pairs[j + 1].y));
+                j++;
             }
-            maxDeque.addLast(j);
 
-            while(!minDeque.isEmpty() && pairs[minDeque.peekLast()].y >= pairs[j].y) {
-                minDeque.pollLast();
-            }
-            minDeque.addLast(j);
+            if(getMax() - getMin() < d) break;
 
-            while(!maxDeque.isEmpty() && !minDeque.isEmpty() && 
-            pairs[maxDeque.peekFirst()].y - pairs[minDeque.peekFirst()].y >= d) {
-                
-                ans = Math.min(ans, pairs[j].x - pairs[i].x);
-
-                if (minDeque.peekFirst() == i) {
-                    minDeque.pollFirst();
-                }
-
-                if (maxDeque.peekFirst() == i) {
-                    maxDeque.pollFirst();
-                }
-                i++;
-            }
+            ans = Math.min(ans, pairs[j].x - pairs[i].x);
+            pointCount.remove(new Target(pairs[i].x, pairs[i].y));
         }
         if(ans == Integer.MAX_VALUE) ans = -1;
         System.out.print(ans);
