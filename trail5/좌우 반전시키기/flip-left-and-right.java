@@ -5,18 +5,6 @@ public class Main {
     public static int n;
     public static int[] arr;
 
-    public static boolean inRange(int x) {
-        return 0 <= x && x < n;
-    }
-
-    public static void flip(int idx) {
-        if(!inRange(idx)) return;
-
-        if(inRange(idx - 1)) arr[idx - 1] = (arr[idx - 1] + 1) % 2;
-        arr[idx] = (arr[idx] + 1) % 2;
-        if(inRange(idx + 1)) arr[idx + 1] = (arr[idx + 1] + 1) % 2;
-    }
-
     public static void main(String[] args) throws IOException{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         n = Integer.parseInt(br.readLine());
@@ -29,19 +17,19 @@ public class Main {
         }
 
         int ans = 0;
-        if(arr[0] == 0) {
-            flip(1);
-            ans++;
-        }
-
-        for(int i = 1; i < n - 1; i++) {
-            if(arr[i] == 0) {
-                flip(i + 1);
+        for(int i = 1; i < n; i++) {
+            if(arr[i - 1] == 0) {
                 ans++;
+
+                arr[i - 1] = 1;
+                arr[i] ^= 1;
+
+                if(i + 1 < n) arr[i + 1] ^= 1;
             }
         }
 
-        if(arr[n - 1] == 0) System.out.print(-1);
-        else System.out.print(ans);
+        if(arr[n - 1] == 0) ans = -1;
+
+        System.out.print(ans);
     }
 }
