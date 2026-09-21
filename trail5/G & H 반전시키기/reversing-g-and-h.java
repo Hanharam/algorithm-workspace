@@ -6,24 +6,21 @@ public class Main {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         int n = Integer.parseInt(br.readLine());
 
-        char[] init = br.readLine().toCharArray();
-        char[] goal = br.readLine().toCharArray();
+        String a = br.readLine();
+        String b = br.readLine();
 
-        boolean[] arr = new boolean[init.length];
-
-        for(int i = 0; i < init.length; i++) {
-            if(init[i] == goal[i]) arr[i] = true;
-            else arr[i] = false;
+        int ans = 0;
+        boolean mismatched = false;
+        for(int i = 0; i < n; i++) {
+            if(a.charAt(i) != b.charAt(i)) {
+                if(!mismatched) {
+                    ans++;
+                    mismatched = true;
+                }
+            } else {
+                mismatched = false;
+            }
         }
-
-        int answer = 0;
-        for(int i = 0; i < init.length - 1; i++) {
-            if(arr[i] == false && arr[i + 1] == true) answer++;
-        }
-
-        if(!arr[init.length - 1]) answer++;
-
-        System.out.print(answer);
-
+        System.out.print(ans);
     }
 }
