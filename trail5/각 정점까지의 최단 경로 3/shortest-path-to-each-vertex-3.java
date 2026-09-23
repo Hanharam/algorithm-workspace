@@ -32,48 +32,44 @@ public class Main {
         int n = Integer.parseInt(st.nextToken());
         int m = Integer.parseInt(st.nextToken());
 
+        int[][] graph = new int[n + 1][n + 1];
+        boolean[] visited = new boolean[n + 1];
 
-        ArrayList<Edge>[] list = new ArrayList[n + 1];
-        for(int i = 1; i <= n; i++) {
-            list[i] = new ArrayList<>();
-        }
         int[] dist = new int[n + 1];
-        Arrays.fill(dist, Integer.MAX_VALUE);
-        dist[1] = 0;
 
         for(int i = 0; i < m; i++) {
             st = new StringTokenizer(br.readLine());
-            int s = Integer.parseInt(st.nextToken());
-            int e = Integer.parseInt(st.nextToken());
-            int v = Integer.parseInt(st.nextToken());
+            int x = Integer.parseInt(st.nextToken());
+            int y = Integer.parseInt(st.nextToken());
+            int z = Integer.parseInt(st.nextToken());
+            graph[x][y] = z;
+        }
 
-            list[s].add(new Edge(e, v));
+        for(int i = 1; i <= n; i++) {
+            dist[i] = (int)1e9;
         }
 
         dist[1] = 0;
 
-        PriorityQueue<Node> pq = new PriorityQueue<>();
-        pq.add(new Node(1, 0));
-        while(!pq.isEmpty()) {
-            Node cur = pq.poll();
-            int curIdx = cur.idx;
-            int curDist = cur.dist;
+        for(int i = 1; i <= n; i++) {
+            int minIdx = -1;
+            for(int j = 1; j <= n; j++) {
+                if(visited[j]) continue;
 
-            if(curDist > dist[curIdx]) continue;
+                if(minIdx == -1 || dist[minIdx] > dist[j]) minIdx = j;
+            }
 
-            for(Edge edge : list[curIdx]) {
-                int nextIdx = edge.e;
-                int nextDist = curDist + edge.v;
+            visited[minIdx] = true;
 
-                if(nextDist < dist[nextIdx]) {
-                    dist[nextIdx] = nextDist;
-                    pq.add(new Node(nextIdx, nextDist));
-                }
+            for(int j = 1; j <= n; j++) {
+                if(graph[minIdx][j] == 0) continue;
+
+                dist[j] = Math.min(dist[j], dist[minIdx] + graph[minIdx][j]);
             }
         }
 
         for(int i = 2; i <= n; i++) {
-            if(dist[i] == Integer.MAX_VALUE) System.out.println(-1);
+            if(dist[i] == 1e9) System.out.println(-1);
             else System.out.println(dist[i]);
         }
     }
