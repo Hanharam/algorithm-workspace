@@ -1,58 +1,28 @@
 import java.util.*;
 import java.io.*;
 
-class Node {
-    int y, z;
-
-    public Node(int y, int z) {
-        this.y = y;
-        this.z = z;
-    }
-}
-
-class Element implements Comparable<Element> {
-    int dist, index;
-    
-    public Element(int dist, int index) {
-        this.dist = dist;
-        this.index = index;
-    }
-
-    @Override
-    public int compareTo(Element e) {
-        return this.dist - e.dist;
-    }
-}
-
 public class Main {
-    public static int n, m;
-    public static int[] path, dist;
-
     public static void main(String[] args) throws IOException{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
 
-        n = Integer.parseInt(st.nextToken());
-        m = Integer.parseInt(st.nextToken());
+        int n = Integer.parseInt(st.nextToken());
+        int m = Integer.parseInt(st.nextToken());
 
-        path = new int[n + 1];
-        dist = new int[n + 1];
+        int[][] graph = new int[n + 1][n + 1];
+        boolean[] visited = new boolean[n + 1];
 
-        ArrayList<Node>[] graph = new ArrayList[n + 1];
-        PriorityQueue<Element> pq = new PriorityQueue<>();
+        int[] path = new int[n + 1];
+        int[] dist = new int[n + 1];
 
-        for(int i = 0; i <= n; i++) {
-            graph[i] = new ArrayList<>();
-        }
-
-        for(int i = 0; i < m; i++) {
+        while(m-- > 0) {
             st = new StringTokenizer(br.readLine());
-            int x  = Integer.parseInt(st.nextToken());
+            int x = Integer.parseInt(st.nextToken());
             int y = Integer.parseInt(st.nextToken());
             int z = Integer.parseInt(st.nextToken());
 
-            graph[x].add(new Node(y, z));
-            graph[y].add(new Node(x, z));
+            graph[x][y] = z;
+            graph[y][x] = z;
         }
 
         st = new StringTokenizer(br.readLine());
@@ -61,42 +31,43 @@ public class Main {
 
         Arrays.fill(dist, (int)1e9);
 
-        pq.add(new Element(0, a));
-
-
         dist[a] = 0;
-        
-        while(!pq.isEmpty()) {
-            int minIndex = pq.peek().index;
-            int minDist = pq.peek().dist;
-            pq.poll();
 
-            if(minDist != dist[minIndex]) continue;
+        for(int i = 1; i <= n; i++) {
 
-            for(int i = 0; i < graph[minIndex].size(); i++) {
-                int targetIndex = graph[minIndex].get(i).y;
-                int targetDist = graph[minIndex].get(i).z;
+            int minIndex = -1;
+            for(int j = 1; j <= n; j++) {
+                if(visited[j]) continue;
 
-                int newDist = dist[minIndex] + targetDist;
+                if(minIndex == -1 || dist[minIndex] > dist[j]) minIndex = j;
+            }
 
-                if(newDist < dist[targetIndex]) {
-                    dist[targetIndex] = newDist;
-                    pq.add(new Element(newDist, targetIndex));
-                    path[targetIndex] = minIndex;
+            visited[minIndex] = true;
+
+            for(int j = 1; j <= n; j++) {
+                if(graph[minIndex][j] == 0) continue;
+
+                if(dist[j] > dist[minIndex] + graph[minIndex][j]) {
+                    dist[j] = dist[minIndex] + graph[minIndex][j];
+
+                    path[j] = minIndex;
                 }
             }
         }
 
-        ArrayList<Integer> ans = new ArrayList<>();
-        int x = b;
-        while(x != 0) {
-            ans.add(x);
-            x = path[x];
-        }
-        
         System.out.println(dist[b]);
-        for(int i = ans.size() - 1; i >= 0; i--) {
-            System.out.print(ans.get(i) + " ");
+
+        int x = b;
+        ArrayList<Integer> vertices = new ArrayList<>();
+        vertices.add(x);
+        while(x != a) {
+            x = path[x];
+            vertices.add(x);
         }
+
+        for(int i = vertices.size() - 1; i >= 0; i--) {
+            System.out.print(vertices.get(i) + " ");
+        }
+
     }
 }
