@@ -1,120 +1,134 @@
 import java.util.*;
 import java.io.*;
 
-class Pair implements Comparable<Pair>{
-    int x, y, cost;
+class Node {
+    int index, dist;
 
-    public Pair(int x, int y, int cost) {
-        this.x = x;
-        this.y = y;
-        this.cost = cost;
+    public Node(int index, int dist) {
+        this.index = index;
+        this.dist = dist;
+    }
+}
+
+class Element implements Comparable<Element> {
+    int dist, index;
+
+    public Element(int dist, int index) {
+        this.dist = dist;
+        this.index = index;
     }
 
     @Override
-    public int compareTo(Pair p) {
-        return cost - p.cost;
+    public int compareTo(Element e) {
+        return this.dist - e.dist;
     }
 }
 
 public class Main {
-    public static int n, a, b;
-    public static char[][] grid;
-    public static ArrayList<Pair>[][] graph;
+    public static final int INT_MAX = Integer.MAX_VALUE;
+    public static final int DIR_NUM = 4;
+    public static final int MAX_M = 900;
+    public static final int MAX_N = 30;
 
-    public static int[] dx = {1, 0, -1, 0};
-    public static int[] dy = {0, 1, 0, -1};
+    public static int n, m, a, b;
+    public static char[][] brackets = new char[MAX_N + 1][MAX_N + 1];
+    public static int[][] nodeNum = new int[MAX_N + 1][MAX_N + 1];
+    public static ArrayList<Node>[] graph = new ArrayList[MAX_M + 1];
+    public static PriorityQueue<Element> pq = new PriorityQueue<>();
+
+    public static int[] dist = new int[MAX_M + 1];
+    public static int ans;
 
     public static boolean inRange(int x, int y) {
-        return 0 <= x && x < n && 0 <= y && y < n;
+        return 1 <= x && x <= n && 1 <= y && y <= n;
     }
 
-    public static int findMinDist(int x, int y) {
-        int[][] dist = new int[n][n];
-        for(int i = 0; i < n; i++) {
-            Arrays.fill(dist[i], (int) 1e9);
-        }
+    public static void makeGraph() {
+        for(int i = 1; i <= n; i++)
+            for(int j = 1; j <= n; j++) 
+                nodeNum[i][j] = ++m;
+        
+        for(int i = 1; i <= m; i++)
+            graph[i] = new ArrayList<>();
 
-        PriorityQueue<Pair> pq = new PriorityQueue<>();
+        for(int x = 1; x <= n; x++) {
+            for(int y = 1; y <= n; y++) {
+                int[] dx = new int[]{1, -1, 0, 0};
+                int[] dy = new int[]{0, 0, 1, -1};
 
-        dist[x][y] = 0;
-        pq.add(new Pair(x, y, 0));
+                for(int k = 0; k < DIR_NUM; k++) {
+                    int nx = x + dx[k];
+                    int ny = y + dy[k];
 
-        while(!pq.isEmpty()) {
-            int curX = pq.peek().x;
-            int curY = pq.peek().y;
-            int curCost = pq.peek().cost;
-            pq.poll();
+                    if(!inRange(nx, ny)) continue;
 
-            if(curCost != dist[curX][curY]) continue;
+                    int node1 = nodeNum[x][y];
+                    int node2 = nodeNum[nx][ny];
 
-            for(int i = 0; i < graph[curX][curY].size(); i++) {
-                int nx = graph[curX][curY].get(i).x;
-                int ny = graph[curX][curY].get(i).y;
-                int nCost = graph[curX][curY].get(i).cost;
-
-                int newCost = curCost + nCost;
-                if(newCost < dist[nx][ny]) {
-                    dist[nx][ny] = newCost;
-                    pq.add(new Pair(nx, ny, newCost));
+                    if(brackets[x][y] == brackets[nx][ny]) {
+                        graph[node1].add(new Node(node2, a));
+                    } else {
+                        graph[node1].add(new Node(node2, b));
+                    }
                 }
             }
         }
+    }
 
-        int max = 0;
-        for(int i = 0; i < n; i++) {
-            for(int j = 0; j < n; j++) {
-                if(i == x && j == y) continue;
-                max = Math.max(dist[i][j], max);
+    public static void dijkstra(int k) {
+        for(int i = 1; i <= m; i++) {
+            dist[i] = (int) 1e9;
+        }
+
+        dist[k] = 0;
+
+        pq.add(new Element(0, k));
+
+        while(!pq.isEmpty()) {
+            int minDist = pq.peek().dist;
+            int minIndex = pq.peek().index;
+            pq.poll();
+
+            if(minDist != dist[minIndex]) continue;
+
+            for(int i = 0; i < graph[minIndex].size(); i++) {
+                int targetDist = graph[minIndex].get(i).dist;
+                int targetIndex = graph[minIndex].get(i).index;
+
+                int newDist = minDist + targetDist;
+
+                if(dist[targetIndex] > newDist) {
+                    dist[targetIndex] = newDist;
+                    pq.add(new Element(newDist, targetIndex));
+                }
             }
         }
-        return max;
     }
 
     public static void main(String[] args) throws IOException{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
+
         n = Integer.parseInt(st.nextToken());
         a = Integer.parseInt(st.nextToken());
         b = Integer.parseInt(st.nextToken());
-
-        grid = new char[n][n];
-
-        for(int i = 0; i < n; i++) {
-            grid[i] = br.readLine().toCharArray();
-        }
-
-        graph = new ArrayList[n][n];
-        for(int i = 0; i < n; i++) {
-            for(int j = 0; j < n; j++) {
-                graph[i][j] = new ArrayList<>();    
+        
+        for(int i = 1; i <= n; i++) {
+            String row = br.readLine();
+            for(int j = 1; j <= n; j++) {
+                brackets[i][j] = row.charAt(j - 1);
             }
         }
 
-        for(int i = 0; i < n; i++) {
-            for(int j = 0; j < n; j++) {
-                
-                for(int d = 0; d < 4; d++) {
-                    int nx = i + dx[d];
-                    int ny = j + dy[d];
+        makeGraph();
 
-                    if(inRange(nx, ny)) {
-                        if(grid[i][j] == grid[nx][ny]) {
-                            graph[i][j].add(new Pair(nx, ny, a));
-                        } else {
-                            graph[i][j].add(new Pair(nx, ny, b));
-                        }
-                    }
-                }
+        for(int i = 1; i <= m; i++) {
+            dijkstra(i);
+
+            for(int j = 1; j <= m; j++) {
+                ans = Math.max(ans, dist[j]);
             }
         }
-
-        int ans = 0;
-        for(int i = 0; i < n; i++) {
-            for(int j = 0; j < n; j++) {
-                ans = Math.max(ans, findMinDist(i, j));
-            }
-        }
-
         System.out.print(ans);
     }
 }
