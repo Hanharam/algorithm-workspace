@@ -1,81 +1,51 @@
 import java.util.*;
 import java.io.*;
 
-class Node {
-    int index, dist;
-
-    public Node(int index, int dist) {
-        this.index = index;
-        this.dist = dist;
-    }
-}
-
-class Element implements Comparable<Element>{
-    int index, dist;
-
-    public Element(int index, int dist) {
-        this.index = index;
-        this.dist = dist;
-    }
-
-    public int compareTo(Element  e) {
-        if(this.dist != e.dist) return this.dist - e.dist;
-        else return index - e.index;
-    }
-}
-
 public class Main {
+    public static final int INT_MAX = Integer.MAX_VALUE;
+    public static final int MAX_N = 1000;
+
     public static int n, m;
-    public static int[] path = new int[1001];
-    public static ArrayList<Node>[] graph = new ArrayList[1001];
-    public static int[] dist = new int[1001];
-    public static boolean[][] checked = new boolean[1001][1001];
-    public static boolean[][] validDir = new boolean[1001][1001];
+    public static int[][] graph = new int[MAX_N + 1][MAX_N + 1];
+    public static boolean[] visited = new boolean[MAX_N + 1];
 
+    public static int[] dist = new int[MAX_N + 1];
 
-    public static void dijkstra() {
-        PriorityQueue<Element> pq = new PriorityQueue<>();
+    public static void dijkstra(int k) {
         for(int i = 1; i <= n; i++) {
             dist[i] = (int) 1e9;
         }
 
-        dist[1] = 0;
-        pq.add(new Element(1, 0));
+        for(int i = 1; i <= n; i++) {
+            visited[i] = false;
+        }
 
-        while(!pq.isEmpty()) {
-            int minIndex = pq.peek().index;
-            int minDist = pq.peek().dist;
-            pq.poll();
+        dist[k] = 0;
+        for(int i = 0; i < n; i++) {
+            int minIndex = -1;
 
-            if(dist[minIndex] != minDist) continue;
+            for(int j = 1; j <= n; j++) {
+                if(visited[j]) continue;
 
-            for(Node n : graph[minIndex]) {
-                int targetIndex = n.index;
-                int targetDist = n.dist;
+                if(minIndex == -1 || dist[minIndex] > dist[j]) 
+                    minIndex = j;
+            }
 
-                if(checked[minIndex][targetIndex]) continue;
+            visited[minIndex] = true;
+            for(int j = 1; j <= n; j++) {
+                if(graph[minIndex][j] == 0) continue;
 
-                int newDist = minDist + targetDist;
-            
-                if(dist[targetIndex] > minDist + targetDist) {
-                    dist[targetIndex] = minDist + targetDist;
-                    pq.add(new Element(targetIndex, newDist));
-
-                    path[targetIndex] = minIndex;
-                }
+                if(dist[j] > dist[minIndex] + graph[minIndex][j])
+                    dist[j] = dist[minIndex] + graph[minIndex][j];
             }
         }
     }
-    
+
     public static void main(String[] args) throws IOException{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
         n = Integer.parseInt(st.nextToken());
         m = Integer.parseInt(st.nextToken());
-
-        for(int i = 1; i <= n; i++) {
-            graph[i] = new ArrayList<>();
-        }
 
         for(int i = 0; i < m; i++) {
             st = new StringTokenizer(br.readLine());
@@ -83,60 +53,40 @@ public class Main {
             int y = Integer.parseInt(st.nextToken());
             int z = Integer.parseInt(st.nextToken());
 
-            graph[x].add(new Node(y, z));
-            graph[y].add(new Node(x, z));
+            graph[x][y] = z;
+            graph[y][x] = z;
         }
 
-        dijkstra();
-        Queue<Integer> q = new LinkedList<>();
-        boolean[] visited = new boolean[1001];
+        dijkstra(n);
 
-        q.add(n);
-        visited[n] = true;
-
-        while(!q.isEmpty()) {
-            int cur = q.poll();
-
-            if(cur == 1) continue;
-
-            for(Node prevNode : graph[cur]) {
-                int prev = prevNode.index;
-                int weight = prevNode.dist;
-
-                if(dist[prev] + weight == dist[cur]) {
-                    validDir[prev][cur] = true;
-
-                    if(!visited[prev]) {
-                        visited[prev] = true;
-                        q.add(prev);
-                    }
-                }
-            }
-        }
-
-        int cur = 1;
-        while(cur != n) {
-            int nextNode = -1;
-
-            for(int v = 1; v <= n; v++) {
-                if(validDir[cur][v]) {
-                    nextNode = v;
+        int x = 1;
+        ArrayList<Integer> vertices = new ArrayList<>();
+        vertices.add(x);
+        while(x != n) {
+            for(int i = 1; i <= n; i++) {
+                if(graph[i][x] == 0)
+                    continue;
+                
+                if(dist[x] == graph[i][x] + dist[i]) {
+                    x = i;
                     break;
                 }
             }
-
-            checked[cur][nextNode] = true;
-            checked[nextNode][cur] = true;
-
-            cur = nextNode;
+            vertices.add(x);
         }
-        
 
-        dijkstra();
+        for(int i = 0; i < vertices.size() - 1; i++) {
+            int a = vertices.get(i);
+            int b = vertices.get(i + 1);
+            graph[a][b] = 0;
+            graph[b][a] = 0;
+        }
 
-        int ans;
-        if(dist[n] == (int) 1e9) ans = -1;
-        else ans = dist[n];
+        dijkstra(1);
+
+        int ans = dist[n];
+
+        if(ans == (int) 1e9) ans  = -1;
 
         System.out.print(ans);
     }
