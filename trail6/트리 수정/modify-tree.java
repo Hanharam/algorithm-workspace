@@ -1,20 +1,22 @@
 import java.util.*;
 import java.io.*;
 
+// 그래프 간선 저장
 class Edge {
-    int index, dist, id;
+    int to, dist, id;
 
-    public Edge(int index, int dist, int id) {
-        this.index = index;
+    public Edge(int to, int dist, int id) {
+        this.to = to;
         this.dist = dist;
         this.id = id;
     }
 }
 
-class OriginalEdge {
+// 제거할 간선 후보
+class Info {
     int x, y, dist;
 
-    public OriginalEdge(int x, int y, int dist) {
+    public Info(int x, int y, int dist) {
         this.x = x;
         this.y = y;
         this.dist = dist;
@@ -23,45 +25,38 @@ class OriginalEdge {
 
 public class Main {
     public static int n, tempPoint;
-    public static long maxDist;
     public static ArrayList<Edge>[] edges;
-    public static OriginalEdge[] originalEdges;
-
+    public static Info[] edgeArray;
     public static boolean[] visited;
+    public static long maxDist;
 
     public static void dfs(int current, long dist, int removedEdgeId) {
         visited[current] = true;
 
         if(dist > maxDist) {
-            maxDist = dist;
             tempPoint = current;
+            maxDist = dist;
         }
 
-        for(Edge edge : edges[current]) {
-            if(edge.id == removedEdgeId) {
-                continue;
-            }
+        for(Edge e : edges[current]) {
+            if(visited[e.to]) continue;
+            if(e.id == removedEdgeId) continue; // 제거된 간선은 방문하지 않음
 
-            if(visited[edge.index]) {
-                continue;
-            }
-
-            dfs(edge.index, dist + edge.dist, removedEdgeId);
+            dfs(e.to, dist + e.dist, removedEdgeId);
         }
     }
 
-    public static long getDiameter(int start, int removedEdgeId) {
+
+    // 지름 구하기
+    public static long getDiameter(int current, int removedEdgeId) {
         visited = new boolean[n];
         maxDist = -1;
+        dfs(current, 0, removedEdgeId);
+        int start = tempPoint;
 
+        visited = new boolean[n];
+        maxDist = -1;
         dfs(start, 0, removedEdgeId);
-
-        int diameterStart = tempPoint;
-
-        visited = new boolean[n];
-        maxDist = -1;
-
-        dfs(diameterStart, 0, removedEdgeId);
 
         return maxDist;
     }
@@ -70,39 +65,37 @@ public class Main {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         n = Integer.parseInt(br.readLine());
 
+        edgeArray = new Info[n - 1];
         edges = new ArrayList[n];
         for(int i = 0; i < n; i++) {
             edges[i] = new ArrayList<>();
         }
 
-        originalEdges = new OriginalEdge[n];
-
+        StringTokenizer st;
         for(int i = 0; i < n - 1; i++) {
-            StringTokenizer st = new StringTokenizer(br.readLine());
+            st = new StringTokenizer(br.readLine());
             int x = Integer.parseInt(st.nextToken());
             int y = Integer.parseInt(st.nextToken());
-            int z = Integer.parseInt(st.nextToken());
+            int dist = Integer.parseInt(st.nextToken());
 
-            originalEdges[i] = new OriginalEdge(x, y, z);
+            edgeArray[i] = new Info(x, y, dist);
 
-            edges[x].add(new Edge(y, z, i));
-            edges[y].add(new Edge(x, z, i));
+            edges[x].add(new Edge(y, dist, i));
+            edges[y].add(new Edge(x, dist, i));
         }
 
         long answer = 0;
+        // 간선 하나씩 지우면서 MAX(좌 + 우 + 제거한 간선) 구하기
+        for(int i = 0; i < n - 1; i++) {
+            Info edge = edgeArray[i];
 
-        for(int removedEdgeId = 0; removedEdgeId < n - 1; removedEdgeId++) {
-            OriginalEdge removed = originalEdges[removedEdgeId];
+            long leftDiameter = getDiameter(edge.x, i);
+            long rightDiameter = getDiameter(edge.y, i);
 
-            long leftDiameter = getDiameter(removed.x, removedEdgeId);
-
-            long rightDiameter = getDiameter(removed.y, removedEdgeId);
-
-            long candidate = leftDiameter + rightDiameter + removed.dist;
+            long candidate = leftDiameter + rightDiameter + edge.dist;
 
             answer = Math.max(answer, candidate);
         }
-        
         System.out.print(answer);
     }
 }
