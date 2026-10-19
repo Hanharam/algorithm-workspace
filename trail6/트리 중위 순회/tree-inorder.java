@@ -2,43 +2,37 @@ import java.util.*;
 import java.io.*;
 
 public class Main {
-    public static int k;
-    public static int[] tree;
-    public static ArrayList<Integer>[] levels; 
+    public static int k, n;
+    public static int[] a;
+    public static int[] treeNum;
+    public static int cnt = 1;
 
-    public static void parse(int start, int end, int depth) {
-        if(start > end) return;
+    public static void inOrder(int idx) {
+        if(idx > n) return;
 
-        int mid = (start + end) / 2;
-        levels[depth].add(tree[mid]);
-        
-        parse(start, mid - 1, depth + 1);
-        parse(mid + 1, end, depth + 1);
+        inOrder(2*idx);
+        treeNum[idx] = a[cnt++];
+        inOrder(2*idx + 1);
     }
 
     public static void main(String[] args) throws IOException{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         k = Integer.parseInt(br.readLine());
 
-        int count = (int) Math.pow(2, k) - 1;
-        tree = new int[count + 1];
-
-        levels = new ArrayList[k + 1];
-        for(int i = 0; i <= k; i++) {
-            levels[i] = new ArrayList<>();
-        }
+        n = (1 << k) - 1;
+        a = new int[n + 1];
+        treeNum = new int[n + 1];
 
         StringTokenizer st = new StringTokenizer(br.readLine());
-        for(int i = 0; i < count; i++) {
-            int num = Integer.parseInt(st.nextToken());
-            tree[i] = num;
+        for(int i = 1; i <= n; i++) {
+            a[i] = Integer.parseInt(st.nextToken());
         }
 
-        parse(0, count - 1, 1);
+        inOrder(1);
 
         for(int i = 1; i <= k; i++) {
-            for(int num : levels[i]) {
-                System.out.print(num + " ");
+            for(int j = (1 << (i - 1)); j <= (1 << i) -  1; j++) {
+                System.out.print(treeNum[j] + " ");
             }
             System.out.println();
         }
