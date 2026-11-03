@@ -2,56 +2,44 @@ import java.util.*;
 import java.io.*;
 
 public class Main {
+    public static final int MAX_K = 10;
+    public static final int MAX_N = 100000;
+
     public static int n, k;
-    public static int[] a;
-    public static boolean[] visited;
-    public static ArrayList<Integer>[] edges;
-    public static long[][][] dp;
+    public static ArrayList<Integer>[] edges = new ArrayList[MAX_N + 1];
+    public static boolean[] visited = new boolean[MAX_N + 1];
+    public static int[][][] dp = new int[MAX_N + 1][MAX_K + 1][2];
+    public static int[] a = new int[MAX_N + 1];
+    public static int ans;
 
-    public static final long NEG = Long.MIN_VALUE / 4;
+    public static void dfs(int x) {
+        dp[x][1][1] = a[x];
+        dp[x][0][0] = 0;
 
-    public static void dfs(int cur) {
-        if(visited[cur]) return;
+        for(int l = 0; l < edges[x].size(); l++) {
+            int y = edges[x].get(l);
 
-        for(int i = 0; i < 2; i++) {
-            Arrays.fill(dp[cur][i], NEG);
-        }
+            if(visited[y]) continue;
 
-        dp[cur][1][1] = a[cur];
-        dp[cur][0][0] = 0;
+            visited[y] = true;
+            dfs(y);
 
-        visited[cur] = true;
-
-        for(int next : edges[cur]) {
-            if(visited[next]) continue;
-
-            dfs(next);
-
-            long[][] merged = new long[2][k + 1];
-            Arrays.fill(merged[0], NEG);
-            Arrays.fill(merged[1], NEG);
-
-            for(int used = 0; used <= k; used++) {
-                for(int take = 0; used + take <= k; take++) {
-                    
-                    // cur을 선택하지 않는 경우
-                    if(dp[cur][0][used] != NEG) {
-                        long childBest = Math.max(dp[next][1][take], dp[next][0][take]);
-
-                        if(childBest != NEG) {
-                            merged[0][take + used] = Math.max(merged[0][take + used], 
-                            dp[cur][0][used] + childBest);
-                        }
-                    }
-
-                    // cur을 선택할 경우
-                    if(dp[cur][1][used] != NEG && dp[next][0][take] != NEG) {
-                        merged[1][used + take] = Math.max(merged[1][used + take],
-                        dp[cur][1][used] + dp[next][0][take]);
-                    }
+            // x 번 노드를 색칠하는 경우인 동시에 i 개의 노드가 색칠된 것을 기대
+            // 지금까지 i -j 개의 노드를 칠했고 
+            // 자식 노드 y에서 j개를 색칠하고 y는 색칠되면 안된다.
+            for(int i = k; i >= 1; i--) {
+                for(int j = 1; j <= i; j++) {
+                    dp[x][i][1] = Math.max(dp[x][i][1], dp[x][i - j][1] + dp[y][j][0]);
                 }
             }
-            dp[cur] = merged;
+            // x 번 노드를 색칠하지 않는 경우인 동시에 i 개의 노드가 색칠된 것을 기대
+            // 지금까지 i - j개의 노드를 칠했고
+            // 자식 노드 y에서 j개를 색칠하고 y의 색칠 여부는 상관 없다(가장 큰 값 구하기)
+            for(int i = k; i >= 0; i--) {
+                for(int j = 0; j <= i; j++) {
+                    dp[x][i][0] = Math.max(dp[x][i][0], dp[x][i - j][0] + Math.max(dp[y][j][0], dp[y][j][1]));
+                }
+            }
         }
     }
 
@@ -59,9 +47,6 @@ public class Main {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         n = Integer.parseInt(br.readLine());
 
-        visited = new boolean[n + 1];
-        a = new int[n + 1];
-        edges = new ArrayList[n + 1];
         for(int i = 0; i <= n; i++) {
             edges[i] = new ArrayList<>();
         }
@@ -82,11 +67,14 @@ public class Main {
 
         k = Integer.parseInt(br.readLine());
 
-        dp = new long[n + 1][2][k + 1];  // 자신 번호||자신 포함 여부||총 포함 개수
-
+        visited[1] = true;
         dfs(1);
 
-        long max = Math.max(dp[1][0][k], dp[1][1][k]);
-        System.out.print(max);
+        for(int i = 1; i <= k; i++) {
+            ans = Math.max(ans, dp[1][i][0]);
+            ans = Math.max(ans, dp[1][i][1]);
+        }
+
+        System.out.print(ans);
     }
 }
